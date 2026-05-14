@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Data Manager — PredictPro Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<title>MBA Percentile Predictor — PredictPro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&family=DM+Serif+Display&family=Barlow:wght@700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -13,496 +13,385 @@
   --accent:#4f46e5;--accent2:#4338ca;--accentl:#ede9fe;--accentb:#c4b5fd;
   --td:#111827;--tm:#374151;--tmu:#6b7280;--tl:#9ca3af;
   --ok:#059669;--okbg:#d1fae5;--okbdr:#6ee7b7;
+  --warn:#d97706;--warnbg:#fef3c7;--warnbdr:#fcd34d;
   --bad:#dc2626;--badbg:#fee2e2;--badbdr:#fca5a5;
   --infobg:#dbeafe;--infobdr:#93c5fd;--infotxt:#1e40af;
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-height:100vh;padding:0 0 4rem}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);overflow-x:hidden;min-height:100vh}
 
-/* ADMIN HEADER — minimal, no main nav */
-.admin-header{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-.admin-title-wrap{display:flex;align-items:center;gap:10px}
-.admin-badge{width:32px;height:32px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-size:14px}
-.admin-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--td)}
-.admin-sub{font-size:11.5px;color:var(--tmu);margin-top:1px}
-.admin-actions{display:flex;gap:8px;flex-wrap:wrap}
-.btn-reset{padding:7px 13px;background:var(--white);border:1.5px solid var(--badbdr);border-radius:7px;font-family:inherit;font-size:12px;font-weight:600;color:var(--bad);cursor:pointer}
-.btn-reset:hover{background:var(--badbg)}
-.btn-back{padding:7px 13px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
-.btn-back:hover{background:var(--accent2)}
+/* NAV */
+nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.2rem;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.nlogo{display:flex;align-items:center;gap:8px}
+.nmark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:grid;place-items:center;font-family:'Playfair Display',serif;font-weight:700;font-size:11px;color:#fff}
+.nname{font-size:14px;font-weight:700;color:var(--td)}.nname span{color:var(--accent);font-weight:400}
+.nlinks{display:flex;gap:1.5rem}
+.nlinks a{font-size:13px;color:var(--tmu);cursor:pointer;text-decoration:none;font-weight:500;transition:color .14s}
+.nlinks a:hover,.nlinks a.act{color:var(--accent)}
+.nbtn{padding:7px 16px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.nbtn:hover{background:var(--accent2)}
+@media(max-width:600px){.nlinks{display:none}.nbtn{font-size:12px;padding:6px 12px}}
 
-/* TABS */
-.tabs-wrap{padding:1.2rem 1.5rem 0;max-width:920px;margin:0 auto}
-.tabs{display:flex;gap:2px;background:var(--s3);border-radius:10px;padding:4px;width:fit-content}
-.dmtab{padding:8px 18px;background:none;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;color:var(--tmu);cursor:pointer;transition:all .14s}
-.dmtab:hover{color:var(--td)}
-.dmtab.on{background:var(--white);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+/* PAGES */
+.pages{position:relative;min-height:calc(100vh - 56px)}
+.page{display:none;animation:fadeIn .25s ease}
+.page.visible{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* CONTENT */
-.content{max-width:920px;margin:0 auto;padding:1.2rem 1.5rem}
-.panel{display:none}.panel.active{display:flex;flex-direction:column;gap:1.1rem}
+/* ═══ PAGE 1 — FORM ═══ */
+#page-form{background:var(--bg);padding:1.5rem 1rem 3rem}
+.form-wrap{width:100%;max-width:680px;margin:0 auto}
+.form-card{background:var(--white);border-radius:16px;padding:1.6rem;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid var(--border)}
+.fc-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--td);font-weight:700;margin-bottom:.3rem}
+.fc-sub{font-size:13px;color:var(--tmu);line-height:1.5;margin-bottom:1.4rem}
 
-/* CARDS */
-.dm-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:1.3rem;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.dm-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.1rem;flex-wrap:wrap}
-.dm-card-title{font-size:14.5px;font-weight:700;color:var(--td);margin-bottom:.2rem}
-.dm-card-desc{font-size:12px;color:var(--tmu);line-height:1.55;max-width:560px}
-.dm-th{font-size:11px;font-weight:700;color:var(--tmu);text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--border);letter-spacing:.3px;white-space:nowrap}
-.dm-th-hint{font-size:9.5px;font-weight:400;color:var(--tl);margin-left:3px}
-.dm-btn-pri{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
-.dm-btn-pri:hover{background:var(--accent2)}
-.dm-btn-sec{padding:6px 12px;background:var(--s3);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--tm);cursor:pointer}
-.dm-btn-sec:hover{border-color:var(--accent);color:var(--accent)}
-.dm-input{padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--td);background:var(--white);outline:none;transition:border-color .14s;width:100%}
-.dm-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,70,229,.08)}
-.dm-td{padding:6px 8px;border-bottom:1px solid var(--border2);vertical-align:middle}
-.del-btn{padding:3px 9px;background:var(--badbg);border:1px solid var(--badbdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--bad);cursor:pointer}
-.del-btn:hover{background:var(--bad);color:#fff}
-.edit-btn{padding:3px 9px;background:var(--infobg);border:1px solid var(--infobdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--infotxt);cursor:pointer;margin-right:3px}
-.edit-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
-.dsecbtn{padding:5px 13px;background:var(--s3);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--tmu);cursor:pointer}
-.dsecbtn:hover{border-color:var(--accent);color:var(--accent)}
-.dsecbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.save-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.saved-msg{font-size:12px;color:var(--ok);font-weight:600}
-.info-banner{background:var(--accentl);border:1.5px solid var(--accentb);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12.5px;color:var(--accent);font-weight:600;display:flex;align-items:center;gap:8px}
-.field{display:flex;flex-direction:column;gap:4px}
-.flabel{font-size:11px;font-weight:600;color:var(--tm);letter-spacing:.2px}
+/* fields */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.flabel{font-size:11.5px;font-weight:600;color:var(--tm);letter-spacing:.2px}
+.finput,.fsel{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .16s,box-shadow .16s;-webkit-appearance:none}
+.finput::placeholder{color:var(--tl)}
+.finput:focus,.fsel:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.finput.valid{border-color:var(--ok)}.finput.invalid{border-color:var(--bad)}
+.field-hint{font-size:11px;margin-top:2px;min-height:14px;font-weight:500}
+.field-hint.ok{color:var(--ok)}.field-hint.err{color:var(--bad)}
+.fsel{cursor:pointer;color:var(--tmu);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fsel.picked{color:var(--td)}
+.slothint{font-size:11.5px;margin-top:3px;min-height:13px;color:var(--tmu)}
 
+/* section cards */
+.secdiv{display:flex;align-items:center;gap:8px;margin:18px 0 12px}
+.secdiv span{font-size:11px;font-weight:700;color:var(--tmu);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.secdiv::before,.secdiv::after{content:'';flex:1;height:1px;background:var(--border)}
+.sec3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.seccard{background:var(--s2);border:1.5px solid var(--border);border-radius:12px;padding:12px 11px 10px;transition:border-color .16s}
+.seccard:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.08);background:var(--white)}
+.sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sc-name-wrap{display:flex;align-items:center;gap:6px}
+.sc-dot{width:8px;height:8px;border-radius:50%}
+.sc-name{font-size:13px;font-weight:700;color:var(--td)}
+.sc-qlabel{font-size:9.5px;color:var(--tl);background:var(--s3);padding:1px 6px;border-radius:8px}
+.sc-live{font-size:12px;font-weight:700;color:var(--tl)}
+.sc-row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sc-inp{font-size:13px;padding:8px 9px}
+.sc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.sc-sl{font-size:10px;color:var(--tmu);font-weight:500}
+.sc-sv{font-size:12.5px;font-weight:700;color:var(--td)}
+.sc-acc{font-size:10px;color:var(--tmu)}
+
+/* total preview */
+.total-bar{background:var(--accentl);border:1.5px solid var(--accentb);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tb-lbl{font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
+.tb-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--accent)}
+.tb-right{font-size:11px;color:var(--tm);text-align:right;line-height:1.65}
+
+/* submit */
+.tcrow{display:flex;align-items:flex-start;gap:8px;margin:12px 0 14px}
+.tcrow input[type=checkbox]{width:14px;height:14px;accent-color:var(--accent);margin-top:2px;flex-shrink:0;cursor:pointer}
+.tctxt{font-size:12px;color:var(--tmu);line-height:1.5}
+.tctxt a{color:var(--accent);text-decoration:none;font-weight:500}
+.subbtn{width:100%;padding:13px;border:none;border-radius:10px;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;cursor:pointer;background:var(--accent);transition:background .18s,transform .1s}
+.subbtn:hover{background:var(--accent2)}.subbtn:active{transform:scale(.99)}
+.errmsg{font-size:12.5px;color:var(--bad);text-align:center;margin-top:7px;min-height:16px}
+
+/* ═══ PAGE 2 — RESULT ═══ */
+#page-result{background:var(--bg);padding:1.5rem 1rem 3rem}
+.result-inner{max-width:860px;margin:0 auto}
+.back-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:.6rem}
+.back-btn{display:flex;align-items:center;gap:6px;background:var(--white);border:1.5px solid var(--border);color:var(--tm);padding:7px 14px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.result-meta{font-size:12px;color:var(--tmu)}
+
+/* result hero */
+.result-hero{background:var(--white);border-radius:16px;padding:2rem 1.5rem;margin-bottom:1.2rem;border:1px solid var(--border);box-shadow:0 4px 20px rgba(79,70,229,.08);display:flex;flex-direction:column;align-items:center;text-align:center;gap:1.2rem}
+.rh-greeting{font-size:15px;color:var(--tmu);font-weight:500}
+.rh-pct-row{display:flex;align-items:baseline;gap:3px}
+.rh-pct{font-family:'DM Serif Display',serif;font-size:88px;font-weight:400;line-height:1;color:var(--accent);letter-spacing:-2px}
+.rh-unit{font-size:26px;color:var(--accent);font-family:'DM Serif Display',serif}
+.rh-label{font-size:15px;font-weight:600;color:var(--tm)}
+.rh-tier{display:inline-block;padding:5px 18px;border-radius:20px;font-size:13px;font-weight:700}
+.t-elite{background:var(--okbg);color:#065f46;border:1px solid var(--okbdr)}
+.t-strong{background:var(--accentl);color:#4c1d95;border:1px solid var(--accentb)}
+.t-good{background:var(--infobg);color:var(--infotxt);border:1px solid var(--infobdr)}
+.t-avg{background:var(--warnbg);color:#92400e;border:1px solid var(--warnbdr)}
+.t-below{background:var(--badbg);color:#991b1b;border:1px solid var(--badbdr)}
+.rh-right{display:flex;flex-direction:row;gap:10px;justify-content:center;width:100%}
+.rh-stat{background:var(--s2);border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;text-align:center;flex:1;max-width:160px}
+.rhs-val{font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;color:var(--td)}
+.rhs-sub{font-size:11px;font-weight:600;color:var(--tmu);margin-top:3px;text-transform:uppercase;letter-spacing:.3px}
+
+/* norm strip */
+.norm-strip{background:var(--infobg);border:1.5px solid var(--infobdr);border-radius:10px;padding:10px 14px;margin-bottom:1.2rem;display:flex;align-items:flex-start;gap:10px}
+.ns-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.ns-text{font-size:12.5px;color:var(--infotxt);line-height:1.6}
+
+/* college table */
+.college-section{background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.col-head{padding:.9rem 1.2rem;background:var(--s2);border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem}
+.col-head-title{font-size:15px;font-weight:700;color:var(--td)}
+.col-head-count{font-size:12px;color:var(--tmu)}
+.filter-tabs{display:flex;gap:5px;flex-wrap:wrap}
+.ftab{padding:4px 10px;background:var(--white);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--tmu);cursor:pointer}
+.ftab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.col-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.col-table{width:100%;border-collapse:collapse;min-width:540px}
+.col-table th{font-size:11.5px;font-weight:700;color:var(--tmu);padding:9px 14px;text-align:left;border-bottom:1.5px solid var(--border);background:var(--s2);white-space:nowrap}
+.col-table td{font-size:13px;padding:10px 14px;border-bottom:1px solid var(--border2);color:var(--tm);vertical-align:middle}
+.col-table tr:last-child td{border:none}
+.col-table tbody tr:hover td{background:var(--s2)}
+.cn{font-size:13.5px;font-weight:700;color:var(--td)}
+.cm{font-size:11px;color:var(--tl);margin-top:1px}
+.tiertag{font-size:11px;font-weight:600;color:var(--tmu);background:var(--s3);padding:2px 8px;border-radius:5px;border:1px solid var(--border)}
+.catbadge{display:inline-block;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;text-transform:uppercase}
+.cb-match{background:var(--okbg);color:#065f46;border:1px solid var(--okbdr)}
+.cb-reach{background:var(--infobg);color:var(--infotxt);border:1px solid var(--infobdr)}
+.cb-safety{background:var(--s3);color:var(--tm);border:1px solid var(--border)}
+.probcell{display:flex;align-items:center;gap:6px}
+.probbar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:48px}
+.probfill{height:100%;border-radius:3px}
+.ph{background:var(--ok)}.pm{background:var(--accent)}.pl{background:var(--warn)}
+.probnum{font-size:12.5px;font-weight:700;color:var(--td);min-width:28px}
+.empty-row{padding:2rem;text-align:center;font-size:14px;color:var(--tmu)}
+
+/* ─── MOBILE RESPONSIVE ─── */
 @media(max-width:600px){
-  .admin-header{padding:.8rem 1rem}
-  .tabs-wrap{padding:.8rem 1rem 0}
-  .content{padding:1rem}
-  .dmtab{padding:7px 12px;font-size:12px}
-  .dm-card{padding:1rem}
+  #page-form{padding:1rem .8rem 2.5rem}
+  #page-result{padding:1rem .8rem 2.5rem}
+  .form-card{padding:1.2rem 1rem;border-radius:12px}
+  .fc-title{font-size:19px}
+  .grid-2{grid-template-columns:1fr}
+  .sec3{grid-template-columns:1fr}
+  .seccard{padding:12px 10px 10px}
+  .rh-pct{font-size:72px}
+  .rh-right{flex-direction:column;align-items:center}
+  .rh-stat{max-width:100%;width:100%}
+  .back-row{flex-direction:column;align-items:flex-start}
+  .col-head{flex-direction:column;align-items:flex-start}
+  .total-bar{flex-direction:column;align-items:flex-start;gap:6px}
+  .tb-right{text-align:left}
+}
+@media(max-width:400px){
+  nav{padding:0 .8rem}
+  .nname{font-size:13px}
+  .sec3{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg)">
-  <div style="background:var(--white);border-radius:16px;padding:2rem 2.2rem;width:380px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.1);border:1.5px solid var(--border)">
-    <div style="text-align:center;margin-bottom:1.5rem">
-      <div style="width:44px;height:44px;background:var(--accent);border-radius:10px;display:grid;place-items:center;font-size:20px;margin:0 auto .8rem">⚙</div>
-      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--td)">Admin Login</div>
-      <div style="font-size:12.5px;color:var(--tmu);margin-top:3px">PredictPro Data Manager</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
-      <div>
-        <div style="font-size:11.5px;font-weight:600;color:var(--tm);margin-bottom:5px">Email</div>
-        <input id="login-email" type="email" placeholder="admin@example.com" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-      </div>
-      <div>
-        <div style="font-size:11.5px;font-weight:600;color:var(--tm);margin-bottom:5px">Password</div>
-        <input id="login-password" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-      </div>
-    </div>
-    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Sign In</button>
-    <div id="login-err" style="font-size:12px;color:var(--bad);text-align:center;margin-top:8px;min-height:16px"></div>
-    <div style="font-size:11px;color:var(--tl);text-align:center;margin-top:12px">Create admin users in Firebase Console → Authentication</div>
+<nav>
+  <div class="nlogo">
+    <div class="nmark">MBA</div>
+    <div class="nname">Predict<span>Pro</span></div>
   </div>
-</div>
-
-<!-- MAIN APP (hidden until login) -->
-<div id="app" style="display:none">
-
-<!-- ADMIN HEADER -->
-<div class="admin-header">
-  <div class="admin-title-wrap">
-    <div class="admin-badge">⚙</div>
-    <div>
-      <div class="admin-title">Data Manager</div>
-      <div class="admin-sub">PredictPro · Changes saved to Firebase DB + browser cache</div>
-    </div>
+  <div class="nlinks">
+    <a class="act" id="nav-predictor">Predictor</a>
+    <a>Cut-offs 2025</a>
+    <a>Mock Tests</a>
   </div>
-  <div class="admin-actions">
-    <div id="admin-user-wrap" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--tmu)">
-      <span>👤</span><span id="admin-user"></span>
-      <button onclick="doLogout()" style="padding:4px 10px;background:var(--s3);border:1.5px solid var(--border);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--tm);cursor:pointer">Logout</button>
-    </div>
-    <button class="btn-reset" onclick="resetAllData()">↺ Reset All</button>
-    <a class="btn-back" href="mba_predictor_final.html">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back to Predictor
-    </a>
-  </div>
-</div>
+  <button class="nbtn">Login / Register</button>
+</nav>
 
-<!-- DB status bar -->
-<div id="db-load-status" style="display:none;font-size:12px;font-weight:500;padding:6px 1.5rem;border-bottom:1px solid var(--border);background:var(--s2)"></div>
+<div class="pages">
 
-<!-- TABS -->
-<div class="tabs-wrap">
-  <div class="tabs">
-    <button class="dmtab on" id="dtab-curve"       onclick="switchTab('curve',this)">📈 Score vs Percentile</button>
-    <button class="dmtab"    id="dtab-colleges"    onclick="switchTab('colleges',this)">🏛 Colleges</button>
-    <button class="dmtab"    id="dtab-settings"    onclick="switchTab('settings',this)">⚙ Settings</button>
-    <button class="dmtab"    id="dtab-submissions" onclick="switchTab('submissions',this)">👥 Submissions</button>
-  </div>
-</div>
+<!-- PAGE 1 — FORM -->
+<div class="page visible" id="page-form">
+  <div class="form-wrap">
+    <div class="form-card">
+      <div class="fc-title">Predict Your CAT 2025 Percentile</div>
+      <div class="fc-sub">Enter your section-wise scores for an instant percentile prediction with college recommendations based on latest 2026 cut-offs.</div>
+      <!-- DB status — auto-hides after 3s -->
+      <div id="db-status" style="font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:7px;margin-bottom:10px;transition:opacity .4s;background:var(--infobg);color:var(--infotxt)">⏳ Loading latest data...</div>
 
-<div class="content">
-
-  <!-- ═══ TAB 1: CURVE ═══ -->
-  <div class="panel active" id="panel-curve">
-    <div class="dm-card">
-      <div class="dm-card-head">
-        <div>
-          <div class="dm-card-title">Score → Percentile Data</div>
-          <div class="dm-card-desc">Maps a <strong>normalized score</strong> to a <strong>percentile</strong>. Add one row per data point. Sort order doesn't matter — handled automatically on save.</div>
-        </div>
-        <div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap">
-          <button class="dm-btn-sec" onclick="importCSV()">⬆ Import CSV</button>
-          <button class="dm-btn-sec" onclick="exportCSV()">⬇ Export CSV</button>
-          <button class="dm-btn-pri" onclick="addCurveRow()">+ Add Row</button>
-        </div>
-      </div>
-      <div class="info-banner">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/><path d="M8 5v4l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <span id="active-curve-text">Loading...</span>
-      </div>
-      <!-- CSV import area -->
-      <div id="csv-import-area" style="display:none;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;padding:12px;margin-bottom:12px">
-        <div style="font-size:12.5px;font-weight:600;color:var(--td);margin-bottom:6px">Paste CSV — one row per line: <code style="background:var(--white);padding:1px 6px;border-radius:4px;font-size:11.5px">Score, Percentile</code></div>
-        <textarea id="csv-input" style="width:100%;height:80px;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none;color:var(--td)" placeholder="87, 99&#10;67, 95&#10;53, 90&#10;43, 85"></textarea>
-        <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
-          <button class="dm-btn-pri" style="font-size:12px;padding:6px 14px" onclick="processCSV()">Import (Append)</button>
-          <button style="padding:6px 14px;background:var(--badbg);border:1.5px solid var(--badbdr);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--bad);cursor:pointer" onclick="processCSV(true)">Replace All</button>
-          <button class="dm-btn-sec" style="font-size:12px;padding:6px 12px" onclick="document.getElementById('csv-import-area').style.display='none'">Cancel</button>
-        </div>
-      </div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;min-width:300px">
-          <thead><tr style="background:var(--s2)">
-            <th class="dm-th" style="width:45%">Normalized Score <span class="dm-th-hint">Post-slot adjustment</span></th>
-            <th class="dm-th" style="width:45%">Percentile <span class="dm-th-hint">0 – 100</span></th>
-            <th class="dm-th" style="width:10%"></th>
-          </tr></thead>
-          <tbody id="curve-tbody"></tbody>
-        </table>
-      </div>
-      <div class="save-row">
-        <button class="dm-btn-pri" onclick="saveCurve()">✓ Save & Apply Curve</button>
-        <span class="saved-msg" id="curve-saved"></span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ TAB 2: COLLEGES ═══ -->
-  <div class="panel" id="panel-colleges">
-    <div class="dm-card" style="padding:0;overflow:hidden">
-      <div class="dm-card-head" style="padding:1rem 1.2rem">
-        <div>
-          <div class="dm-card-title">College Cut-offs &amp; Placements</div>
-          <div class="dm-card-desc">Set the minimum percentile required per college and placement data. Used for Reach / Match / Safety classification.</div>
-        </div>
-        <button class="dm-btn-pri" onclick="openModal(null)" style="flex-shrink:0">+ Add College</button>
-      </div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;min-width:520px" id="college-tbl">
-          <thead><tr style="background:var(--s2)">
-            <th class="dm-th" style="padding-left:1.2rem">College</th>
-            <th class="dm-th">Tier</th>
-            <th class="dm-th">Cut-off <span class="dm-th-hint">General %ile</span></th>
-            <th class="dm-th">Avg Pkg <span class="dm-th-hint">₹L</span></th>
-            <th class="dm-th">Max Pkg <span class="dm-th-hint">₹L</span></th>
-            <th class="dm-th"></th>
-          </tr></thead>
-          <tbody id="college-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ TAB 3: SETTINGS ═══ -->
-  <div class="panel" id="panel-settings">
-
-    <!-- Category relaxation -->
-    <div class="dm-card">
-      <div class="dm-card-title" style="margin-bottom:.25rem">Category Cut-off Relaxation</div>
-      <div class="dm-card-desc" style="margin-bottom:1rem">How many percentile points to <strong>subtract from a college's cut-off</strong> for each category. Makes more colleges accessible for reserved categories. Keep General at 0. Enter negative numbers.</div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px" id="cat-relax-fields"></div>
-      <div class="save-row">
-        <button class="dm-btn-pri" onclick="saveCatRelax()">✓ Save Relaxation</button>
-        <span class="saved-msg" id="relax-saved"></span>
-      </div>
-    </div>
-
-    <!-- Slot offsets -->
-    <div class="dm-card">
-      <div class="dm-card-title" style="margin-bottom:.25rem">Slot Difficulty Offsets</div>
-      <div class="dm-card-desc" style="margin-bottom:1rem">How many points to <strong>add</strong> to scores from each slot to compensate for difficulty differences. Slot 1 (easiest) = 0. Slot 2 (hardest) = larger number like 4.</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="slot-offset-fields"></div>
-      <div style="margin-top:8px;padding:8px 10px;background:var(--s2);border-radius:7px;font-size:11.5px;color:var(--tmu)">
-        💡 Example: Slot 2 offset = 4 means a raw score of 80 in Slot 2 is treated as 84 for percentile calculation.
-      </div>
-      <div class="save-row">
-        <button class="dm-btn-pri" onclick="saveSlotOffsets()">✓ Save Offsets</button>
-        <span class="saved-msg" id="offset-saved"></span>
-      </div>
-    </div>
-
-    <!-- Slot labels -->
-    <div class="dm-card">
-      <div class="dm-card-title" style="margin-bottom:.25rem">Slot Labels</div>
-      <div class="dm-card-desc" style="margin-bottom:1rem">Labels shown to students on the predictor form. No effect on calculation.</div>
-      <div style="display:flex;flex-direction:column;gap:10px" id="slot-meta-fields"></div>
-      <div class="save-row">
-        <button class="dm-btn-pri" onclick="saveSlotMeta()">✓ Save Labels</button>
-        <span class="saved-msg" id="slot-saved"></span>
-      </div>
-    </div>
-
-    <!-- Advanced: master distributions -->
-    <div class="dm-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleAdv()">
-        <div>
-          <div class="dm-card-title" style="margin-bottom:.2rem">Advanced: Section Score Distributions</div>
-          <div class="dm-card-desc">Master normalization tables (VARC, LRDI, QA). Edit only if you have precise section-level data.</div>
-        </div>
-        <span id="adv-icon" style="font-size:18px;color:var(--tmu);flex-shrink:0;margin-left:12px">▸</span>
-      </div>
-      <div id="adv-panel" style="display:none;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)">
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <button class="dsecbtn on" id="mbtn-varc" onclick="switchMasterSec('varc',this)">VARC</button>
-          <button class="dsecbtn" id="mbtn-lrdi" onclick="switchMasterSec('lrdi',this)">LRDI</button>
-          <button class="dsecbtn" id="mbtn-qa"   onclick="switchMasterSec('qa',this)">QA</button>
-        </div>
-        <div style="font-size:11.5px;color:var(--tmu);margin-bottom:8px">Each row: <code style="background:var(--s3);padding:1px 5px;border-radius:4px">Section Score → Intra-section Percentile</code></div>
-        <div id="master-panel"></div>
-        <div class="save-row">
-          <button class="dm-btn-pri" onclick="saveMasterDist()">✓ Save Distribution</button>
-          <span class="saved-msg" id="master-saved"></span>
-        </div>
-      </div>
-    </div>
-
-  <!-- ═══ TAB 4: SUBMISSIONS ═══ -->
-  <div class="panel" id="panel-submissions">
-
-    <!-- Stats bar -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px" id="sub-stats"></div>
-
-    <!-- Filters -->
-    <div class="dm-card">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-        <div class="field" style="flex:1;min-width:160px">
-          <div class="flabel">Search name / mobile</div>
-          <input class="dm-input" id="sub-search" placeholder="Type to filter..." oninput="filterSubs()">
+      <div class="grid-2">
+        <div class="field">
+          <div class="flabel">Full Name *</div>
+          <input class="finput" id="f-name" type="text" placeholder="Your name">
         </div>
         <div class="field">
-          <div class="flabel">Category</div>
-          <select class="dm-input" id="sub-cat" onchange="filterSubs()" style="cursor:pointer">
-            <option value="">All</option>
-            <option>GEN</option><option>OBC</option><option>SC</option><option>ST</option><option>PWD</option>
+          <div class="flabel">Mobile Number *</div>
+          <input class="finput" id="f-mobile" type="tel" maxlength="10" placeholder="10-digit number" oninput="validateMobile(this)">
+          <div class="field-hint" id="mobile-hint"></div>
+        </div>
+        <div class="field">
+          <div class="flabel">Category *</div>
+          <select class="fsel" id="f-cat" onchange="this.classList.add('picked')">
+            <option value="" disabled selected>Select Category</option>
+            <option value="GEN">General / EWS</option>
+            <option value="OBC">OBC-NCL</option>
+            <option value="SC">SC</option>
+            <option value="ST">ST</option>
+            <option value="PWD">PwD</option>
           </select>
         </div>
         <div class="field">
-          <div class="flabel">Slot</div>
-          <select class="dm-input" id="sub-slot" onchange="filterSubs()" style="cursor:pointer">
-            <option value="">All</option>
-            <option value="S1">Slot 1</option><option value="S2">Slot 2</option><option value="S3">Slot 3</option>
+          <div class="flabel">Gender *</div>
+          <select class="fsel" id="f-gender" onchange="this.classList.add('picked')">
+            <option value="" disabled selected>Select</option>
+            <option>Male</option><option>Female</option><option>Other</option>
           </select>
         </div>
-        <div class="field">
-          <div class="flabel">Percentile ≥</div>
-          <input class="dm-input" id="sub-pct-min" type="number" min="0" max="100" placeholder="0" style="width:80px" oninput="filterSubs()">
+        <div class="field" style="grid-column:1/-1">
+          <div class="flabel">Select Slot *</div>
+          <select class="fsel" id="f-slot" onchange="this.classList.add('picked');updateSlotHint()">
+            <option value="" disabled selected>Select Exam Slot</option>
+            <option value="S1">Slot 1 — Morning (9:00 AM) · CAT 2025</option>
+            <option value="S2">Slot 2 — Afternoon (2:00 PM) · CAT 2025</option>
+            <option value="S3">Slot 3 — Evening (5:00 PM) · CAT 2025</option>
+          </select>
+          <div class="slothint" id="slot-hint"></div>
         </div>
-        <div class="field">
-          <div class="flabel">Percentile ≤</div>
-          <input class="dm-input" id="sub-pct-max" type="number" min="0" max="100" placeholder="100" style="width:80px" oninput="filterSubs()">
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:12.5px;color:#065f46;display:flex;align-items:center;gap:8px">
+        <span>🧮</span>
+        <span>Score = <strong>(Correct × 3)</strong> − <strong>(MCQ Wrong × 1)</strong> &nbsp;·&nbsp; TITA wrong = no penalty</span>
+      </div>
+
+      <div class="secdiv"><span>Section-Wise Score Entry</span></div>
+      <div class="sec3">
+        <!-- VARC -->
+        <div class="seccard">
+          <div class="sc-top">
+            <div class="sc-name-wrap">
+              <div class="sc-dot" style="background:#6366f1"></div>
+              <span class="sc-name">VARC</span>
+              <span class="sc-qlabel">24Q·5T</span>
+            </div>
+            <span class="sc-live" id="varc-live">—</span>
+          </div>
+          <div class="sc-row2">
+            <div class="field"><div class="flabel">Total Correct</div><input class="finput sc-inp" id="varc-cor" type="number" min="0" max="24" placeholder="0–24" oninput="liveCalc('varc')"></div>
+            <div class="field"><div class="flabel">MCQ Wrong</div><input class="finput sc-inp" id="varc-wrong" type="number" min="0" max="19" placeholder="0–19" oninput="liveCalc('varc')"></div>
+          </div>
+          <div class="sc-foot"><span class="sc-sl">Score</span><span class="sc-sv" id="varc-score">—</span><span class="sc-acc" id="varc-acc"></span></div>
         </div>
-        <button class="dm-btn-pri" onclick="exportSubCSV()" style="align-self:flex-end">⬇ Export CSV</button>
-        <button class="dm-btn-sec" onclick="loadSubmissions()" style="align-self:flex-end">↺ Refresh</button>
+        <!-- LRDI -->
+        <div class="seccard">
+          <div class="sc-top">
+            <div class="sc-name-wrap">
+              <div class="sc-dot" style="background:#0ea5e9"></div>
+              <span class="sc-name">LRDI</span>
+              <span class="sc-qlabel">20Q·4T</span>
+            </div>
+            <span class="sc-live" id="lrdi-live">—</span>
+          </div>
+          <div class="sc-row2">
+            <div class="field"><div class="flabel">Total Correct</div><input class="finput sc-inp" id="lrdi-cor" type="number" min="0" max="20" placeholder="0–20" oninput="liveCalc('lrdi')"></div>
+            <div class="field"><div class="flabel">MCQ Wrong</div><input class="finput sc-inp" id="lrdi-wrong" type="number" min="0" max="16" placeholder="0–16" oninput="liveCalc('lrdi')"></div>
+          </div>
+          <div class="sc-foot"><span class="sc-sl">Score</span><span class="sc-sv" id="lrdi-score">—</span><span class="sc-acc" id="lrdi-acc"></span></div>
+        </div>
+        <!-- QA -->
+        <div class="seccard">
+          <div class="sc-top">
+            <div class="sc-name-wrap">
+              <div class="sc-dot" style="background:#10b981"></div>
+              <span class="sc-name">QA</span>
+              <span class="sc-qlabel">22Q·5T</span>
+            </div>
+            <span class="sc-live" id="qa-live">—</span>
+          </div>
+          <div class="sc-row2">
+            <div class="field"><div class="flabel">Total Correct</div><input class="finput sc-inp" id="qa-cor" type="number" min="0" max="22" placeholder="0–22" oninput="liveCalc('qa')"></div>
+            <div class="field"><div class="flabel">MCQ Wrong</div><input class="finput sc-inp" id="qa-wrong" type="number" min="0" max="17" placeholder="0–17" oninput="liveCalc('qa')"></div>
+          </div>
+          <div class="sc-foot"><span class="sc-sl">Score</span><span class="sc-sv" id="qa-score">—</span><span class="sc-acc" id="qa-acc"></span></div>
+        </div>
       </div>
-    </div>
 
-    <!-- Table -->
-    <div class="dm-card" style="padding:0;overflow:hidden">
-      <div id="sub-loading" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">Loading submissions...</div>
-      <div style="overflow-x:auto;display:none" id="sub-table-wrap">
-        <table style="width:100%;border-collapse:collapse;min-width:800px">
-          <thead>
-            <tr style="background:var(--s2)">
-              <th class="dm-th">#</th>
-              <th class="dm-th">Name</th>
-              <th class="dm-th">Mobile</th>
-              <th class="dm-th">Category</th>
-              <th class="dm-th">Slot</th>
-              <th class="dm-th">VARC</th>
-              <th class="dm-th">LRDI</th>
-              <th class="dm-th">QA</th>
-              <th class="dm-th">Raw</th>
-              <th class="dm-th">Norm</th>
-              <th class="dm-th">Percentile</th>
-              <th class="dm-th">Tier</th>
-              <th class="dm-th">Date</th>
-            </tr>
-          </thead>
-          <tbody id="sub-tbody"></tbody>
-        </table>
-        <div style="padding:.7rem 1rem;font-size:12px;color:var(--tmu);border-top:1px solid var(--border)" id="sub-count"></div>
+      <div class="total-bar">
+        <div><div class="tb-lbl">Calculated Score</div><div class="tb-num" id="tb-num">—</div></div>
+        <div class="tb-right" id="tb-detail">Fill in your section scores above</div>
       </div>
-    </div>
 
-  </div>
-
-</div><!-- /content -->
-
-<!-- MODAL — add/edit college -->
-<div id="college-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;padding:1rem">
-  <div style="background:#fff;border-radius:14px;padding:1.6rem;width:460px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
-    <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--td);margin-bottom:1rem" id="modal-title">Add College</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="field" style="grid-column:1/-1"><div class="flabel">College Name *</div><input class="dm-input" id="m-name" placeholder="e.g. IIM Ahmedabad"></div>
-      <div class="field"><div class="flabel">Tier</div><input class="dm-input" id="m-tier" placeholder="e.g. IIM-ABC"></div>
-      <div class="field"><div class="flabel">Cut-off Percentile (GEN) *</div><input class="dm-input" id="m-co" type="number" min="50" max="100" step="0.5" placeholder="99.0"></div>
-      <div class="field"><div class="flabel">Avg Package (₹L) *</div><input class="dm-input" id="m-avg" type="number" min="1" max="200" step="0.1" placeholder="34.5"></div>
-      <div class="field"><div class="flabel">Max Package (₹L)</div><input class="dm-input" id="m-max" type="number" min="1" max="500" placeholder="78"></div>
+      <div class="tcrow">
+        <input type="checkbox" id="f-tc">
+        <label class="tctxt" for="f-tc">I have read and agree to the <a href="#">terms &amp; conditions</a> and <a href="#">privacy policy</a>. Prediction is based on historical CAT data.</label>
+      </div>
+      <button class="subbtn" onclick="predict()">Submit &amp; Predict Now!</button>
+      <div class="errmsg" id="err-msg"></div>
     </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button onclick="closeModal()" style="padding:8px 18px;background:var(--s3);border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--tm);cursor:pointer">Cancel</button>
-      <button onclick="saveCollege()" class="dm-btn-pri">Save College</button>
-    </div>
-    <div style="font-size:11.5px;color:var(--bad);margin-top:7px;min-height:14px" id="modal-err"></div>
   </div>
 </div>
+
+<!-- PAGE 2 — RESULT -->
+<div class="page" id="page-result">
+  <div class="result-inner">
+    <div class="back-row">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back to Form
+      </button>
+      <div class="result-meta" id="result-meta">CAT 2025 · IIM EPN Normalized · 2026 Cut-offs</div>
+    </div>
+
+    <div class="result-hero">
+      <div class="rh-greeting" id="rh-greeting">Hello —</div>
+      <div class="rh-pct-row">
+        <span class="rh-pct" id="rh-pct">—</span><span class="rh-unit">th</span>
+      </div>
+      <div class="rh-label">Estimated Percentile</div>
+      <div class="rh-tier" id="rh-tier"></div>
+      <div class="rh-right" id="rh-stats"></div>
+    </div>
+
+    <div class="norm-strip" id="norm-strip">
+      <div class="ns-icon">⚡</div>
+      <div class="ns-text" id="norm-text"></div>
+    </div>
+
+    <div class="college-section">
+      <div class="col-head">
+        <div class="col-head-title">College Placement Predictions</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="filter-tabs">
+            <button class="ftab on" onclick="filterColleges('all',this)">All</button>
+            <button class="ftab" onclick="filterColleges('match',this)">Match</button>
+            <button class="ftab" onclick="filterColleges('reach',this)">Reach</button>
+            <button class="ftab" onclick="filterColleges('safety',this)">Safety</button>
+          </div>
+          <div class="col-head-count" id="col-count"></div>
+        </div>
+      </div>
+      <div class="col-table-wrap">
+        <table class="col-table">
+          <thead><tr>
+            <th>Institution</th><th>Tier</th><th>Cut-off</th>
+            <th>Prediction</th><th>Probability</th><th>Avg Pkg</th>
+          </tr></thead>
+          <tbody id="col-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pages -->
 
 <script>
 // ════════════════════════════════════════════════════
 //  SUPABASE CONFIG — fill in from:
 //  supabase.com → Project → Settings → API
 // ════════════════════════════════════════════════════
-const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';   // e.g. https://xyzabc.supabase.co
-const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';      // long string starting with eyJ...
+const SB_URL      = 'YOUR_PROJECT_URL';   // e.g. https://xyzabc.supabase.co
+const SB_ANON_KEY = 'YOUR_ANON_KEY';      // long string starting with eyJ...
 // ════════════════════════════════════════════════════
 
-// Supabase Auth endpoint
-const SB_SIGNIN = `${SB_URL}/auth/v1/token?grant_type=password`;
-
-let sbAccessToken = null;  // set after login
-
-// ── AUTH ─────────────────────────────────────────────
-async function doLogin(){
-  const email    = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errEl    = document.getElementById('login-err');
-  const btnEl    = document.getElementById('login-btn');
-  if(!email||!password){errEl.textContent='Enter email and password.';return;}
-  btnEl.textContent='Signing in...';btnEl.disabled=true;errEl.textContent='';
-  try{
-    const res = await fetch(SB_SIGNIN,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_ANON_KEY},
-      body:JSON.stringify({email,password})
-    });
-    const data = await res.json();
-    if(!res.ok || data.error){
-      errEl.textContent = data.error_description || data.msg || 'Invalid credentials';
-      btnEl.textContent='Sign In'; btnEl.disabled=false; return;
-    }
-    sbAccessToken = data.access_token;
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    document.getElementById('admin-user').textContent=email;
-    document.getElementById('admin-user-wrap').style.display='flex';
-    await loadFromSupabase();
-  } catch(e){
-    errEl.textContent='Network error. Check your connection.';
-    btnEl.textContent='Sign In'; btnEl.disabled=false;
-  }
-}
-function doLogout(){
-  sbAccessToken=null;
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-password').value='';
-}
-
-// ── DB READ ───────────────────────────────────────────
-async function loadFromSupabase(){
-  const statusEl = document.getElementById('db-load-status');
-  statusEl.textContent='⏳ Loading from database...'; statusEl.style.display='block'; statusEl.style.color='var(--accent)';
-  try{
-    const res = await fetch(`${SB_URL}/rest/v1/config?select=key,value`,{
-      headers:{
-        'apikey': SB_ANON_KEY,
-        'Authorization': `Bearer ${sbAccessToken||SB_ANON_KEY}`
-      }
-    });
-    if(!res.ok) throw new Error(res.status);
-    const rows = await res.json();
-    if(rows && rows.length){
-      const d = {};
-      rows.forEach(r => d[r.key]=r.value);
-      if(d.pm_curve_rows)  activeCurveRows   = d.pm_curve_rows;
-      if(d.pm_colleges)    activeColleges    = d.pm_colleges;
-      if(d.pm_slotmeta)    activeSlotMeta    = d.pm_slotmeta;
-      if(d.pm_catrelax)    activeCatRelax    = d.pm_catrelax;
-      if(d.pm_master)      activeMaster      = d.pm_master;
-      if(d.pm_slotoffsets) activeSlotOffsets = d.pm_slotoffsets;
-      rows.forEach(r => localStorage.setItem(r.key, JSON.stringify(r.value)));
-    }
-    statusEl.textContent='✅ Database loaded successfully'; statusEl.style.color='var(--ok)';
-    setTimeout(()=>statusEl.style.display='none', 2500);
-    renderCurveTable(); renderColleges();
-  } catch(e){
-    statusEl.textContent='⚠ Could not load from DB — showing local cache'; statusEl.style.color='var(--warn)';
-    console.warn(e);
-  }
-}
-
-// ── DB WRITE ──────────────────────────────────────────
-// Supabase upsert — inserts if key doesn't exist, updates if it does
-async function saveToSupabase(key, value){
-  // Always write to localStorage immediately
-  localStorage.setItem(key, JSON.stringify(value));
-  if(!sbAccessToken || !SB_URL || SB_URL==='YOUR_PROJECT_URL') return;
-  try{
-    await fetch(`${SB_URL}/rest/v1/config`,{
-      method:'POST',
-      headers:{
-        'apikey':          SB_ANON_KEY,
-        'Authorization':   `Bearer ${sbAccessToken}`,
-        'Content-Type':    'application/json',
-        'Prefer':          'resolution=merge-duplicates'  // upsert
-      },
-      body: JSON.stringify({key, value, updated_at: new Date().toISOString()})
-    });
-  } catch(e){ console.warn('Supabase write failed for', key, e.message); }
-}
-
-// Alias so the rest of the code stays clean
-const saveToFirebase = saveToSupabase;
-
-// ── ENTER key on login ──
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('login-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  // If Supabase not configured → skip login, work offline
-  if(!SB_URL || SB_URL==='YOUR_PROJECT_URL'){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    document.getElementById('db-load-status').textContent='⚠ Supabase not configured — changes saved to browser only';
-    document.getElementById('db-load-status').style.display='block';
-    document.getElementById('db-load-status').style.color='var(--warn)';
-    document.getElementById('admin-user-wrap').style.display='none';
-  }
-});
-
-// ── DEFAULT DATA ──
-const DEFAULT_CURVE=[[0,.1],[3,.5],[6,1],[8,2],[10,3.5],[11,5],[12.5,55],[16.5,60],[19,65],[21.5,70],[27.5,75],[36,80],[43,85],[53,90],[67,95],[72.5,97],[81,98],[87,99],[114.5,99.5],[118,99.9],[122,100]];
-const DEFAULT_CATCO={GEN:0,OBC:-8,SC:-18,ST:-22,PWD:-25};
-const DEFAULT_MASTER={
+// ── DEFAULTS (used if Firebase unavailable or not configured) ──
+const D_CURVE=[[0,.1],[3,.5],[6,1],[8,2],[10,3.5],[11,5],[12.5,55],[16.5,60],[19,65],[21.5,70],[27.5,75],[36,80],[43,85],[53,90],[67,95],[72.5,97],[81,98],[87,99],[114.5,99.5],[118,99.9],[122,100]];
+const D_CATCO={GEN:0,OBC:-8,SC:-18,ST:-22,PWD:-25};
+const D_MASTER={
   varc:[[-10,.5],[-6,1],[-2,3],[0,5],[4,10],[7,15],[9,20],[11.5,55],[12.5,60],[13.5,65],[14.5,70],[15.5,75],[17.5,80],[22,85],[25,90],[30,95],[33,97],[37.5,98],[41,99],[47,99.5],[52,99.9],[64,100]],
   lrdi:[[-10,.5],[-5,1],[-2,3],[0,5],[2,10],[4,15],[5,20],[6.5,55],[7.5,60],[8.5,65],[9.5,70],[10.5,75],[12,80],[15,85],[17,90],[22,95],[22.5,97],[25.5,98],[29,99],[33.5,99.5],[43,99.9],[53,100]],
   qa:  [[-10,.5],[-5,1],[-2,3],[0,5],[2,10],[3,15],[4,20],[4.5,55],[5.5,60],[6.5,65],[7.5,70],[8.5,75],[10,80],[15,85],[17,90],[20.5,97],[23,95],[23.5,98],[30,99],[31,99.5],[45,99.9],[55,100]].sort((a,b)=>a[0]-b[0]),
 };
-const DEFAULT_SLOTMETA={
+const D_SLOTMETA={
   S1:{lbl:'Slot 1 — Morning (CAT 2025)',diff:'Moderate',note:'Moderate difficulty. Minimal normalization adjustment.'},
   S2:{lbl:'Slot 2 — Afternoon (CAT 2025)',diff:'Hard',note:'Harder slot. Your score is boosted to reflect tougher questions.'},
   S3:{lbl:'Slot 3 — Evening (CAT 2025)',diff:'Moderate-Hard',note:'Moderate-Hard slot. Small normalization boost applied.'},
 };
-const DEFAULT_COLLEGES=[
+const D_COLLEGES=[
   {name:'IIM Ahmedabad',tier:'IIM-ABC',co:99.0,avg:36.5,max:85},{name:'IIM Bangalore',tier:'IIM-ABC',co:99.0,avg:35.2,max:68},
   {name:'IIM Calcutta',tier:'IIM-ABC',co:98.5,avg:35.8,max:78},{name:'FMS Delhi',tier:'Central',co:98.5,avg:30.2,max:58},
   {name:'IIM Lucknow',tier:'IIM-Next',co:97.5,avg:30.1,max:55},{name:'IIM Kozhikode',tier:'IIM-Next',co:97.0,avg:27.8,max:50},
@@ -518,354 +407,245 @@ const DEFAULT_COLLEGES=[
   {name:'TAPMI Manipal',tier:'Pvt',co:80.0,avg:11.8,max:22},{name:'BIMTECH Gr. Noida',tier:'Pvt',co:75.0,avg:10.2,max:20},
 ];
 
-// ── LIVE STATE ──
-let activeCurveRows   = JSON.parse(localStorage.getItem('pm_curve_rows'))  || DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
-let activeColleges    = JSON.parse(localStorage.getItem('pm_colleges'))    || DEFAULT_COLLEGES.map(c=>({...c}));
-let activeSlotMeta    = JSON.parse(localStorage.getItem('pm_slotmeta'))    || JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
-let activeCatRelax    = JSON.parse(localStorage.getItem('pm_catrelax'))    || {...DEFAULT_CATCO};
-let activeMaster      = JSON.parse(localStorage.getItem('pm_master'))      || JSON.parse(JSON.stringify(DEFAULT_MASTER));
-let activeSlotOffsets = JSON.parse(localStorage.getItem('pm_slotoffsets')) || {S1:0,S2:4,S3:2};
+// ── ACTIVE STATE — populated by loadConfig() ──
+let activeCurve, activeColleges, activeSlotMeta, activeCatRelax, activeMaster, activeSlotOffsets;
 
-// ── TABS ──
-function switchTab(tab, btn){
-  document.querySelectorAll('.dmtab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+tab).classList.add('active');
-  if(tab==='settings') renderSettings();
+function applyConfig(cfg){
+  activeCurve        = cfg.pm_curve        || D_CURVE.map(p=>[...p]);
+  activeColleges     = cfg.pm_colleges     || D_COLLEGES.map(c=>({...c}));
+  activeSlotMeta     = cfg.pm_slotmeta     || JSON.parse(JSON.stringify(D_SLOTMETA));
+  activeCatRelax     = cfg.pm_catrelax     || {...D_CATCO};
+  activeMaster       = cfg.pm_master       || JSON.parse(JSON.stringify(D_MASTER));
+  activeSlotOffsets  = cfg.pm_slotoffsets  || {S1:0,S2:4,S3:2};
+  // Cache to localStorage for offline fallback
+  Object.entries(cfg).forEach(([k,v])=>localStorage.setItem(k, JSON.stringify(v)));
 }
 
-// ── CURVE ──
-function renderCurveTable(){
-  document.getElementById('active-curve-text').textContent=`${activeCurveRows.length} data points loaded · sorted by score on save`;
-  document.getElementById('curve-tbody').innerHTML=activeCurveRows.map((r,i)=>`
-    <tr style="border-bottom:1px solid var(--border2)">
-      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-sc-${i}" type="number" value="${r.score}" min="-30" max="228" step="0.5"></td>
-      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-pc-${i}" type="number" value="${r.pct}" min="0" max="100" step="0.1"></td>
-      <td style="padding:5px 8px"><button class="del-btn" onclick="deleteCurveRow(${i})">✕</button></td>
-    </tr>`).join('');
-}
-function addCurveRow(){activeCurveRows.push({score:0,pct:0});renderCurveTable();}
-function deleteCurveRow(i){if(activeCurveRows.length<=3){alert('Need at least 3 points.');return;}activeCurveRows.splice(i,1);renderCurveTable();}
-async function saveCurve(){
-  const rows=[];
-  for(let i=0;i<activeCurveRows.length;i++){
-    const score=parseFloat(document.getElementById('cr-sc-'+i).value);
-    const pct=parseFloat(document.getElementById('cr-pc-'+i).value);
-    if(isNaN(score)||isNaN(pct)){alert(`Row ${i+1}: values must be numbers.`);return;}
-    if(pct<0||pct>100){alert(`Row ${i+1}: percentile must be 0–100.`);return;}
-    rows.push({score,pct});
-  }
-  rows.sort((a,b)=>a.score-b.score);
-  activeCurveRows=rows;
-  await saveToFirebase('pm_curve_rows', activeCurveRows);
-  await saveToFirebase('pm_curve', rows.map(r=>[r.score,r.pct]));
-  renderCurveTable();flash('curve-saved','✓ Saved & applied to predictor');
-}
-function importCSV(){const a=document.getElementById('csv-import-area');a.style.display=a.style.display==='none'?'block':'none';}
-function processCSV(replace=false){
-  const raw=document.getElementById('csv-input').value.trim();
-  if(!raw){alert('No data pasted.');return;}
-  const newRows=[];
-  raw.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#')).forEach(line=>{
-    const p=line.split(',').map(x=>x.trim());
-    let score,pct;
-    if(p.length>=3){score=parseFloat(p[1]);pct=parseFloat(p[2]);}
-    else if(p.length===2){score=parseFloat(p[0]);pct=parseFloat(p[1]);}
-    else return;
-    if(!isNaN(score)&&!isNaN(pct)) newRows.push({score,pct});
+function loadFromCache(){
+  applyConfig({
+    pm_curve:        JSON.parse(localStorage.getItem('pm_curve')),
+    pm_colleges:     JSON.parse(localStorage.getItem('pm_colleges')),
+    pm_slotmeta:     JSON.parse(localStorage.getItem('pm_slotmeta')),
+    pm_catrelax:     JSON.parse(localStorage.getItem('pm_catrelax')),
+    pm_master:       JSON.parse(localStorage.getItem('pm_master')),
+    pm_slotoffsets:  JSON.parse(localStorage.getItem('pm_slotoffsets')),
   });
-  if(!newRows.length){alert('No valid rows. Format: Score, Percentile');return;}
-  activeCurveRows=replace?newRows:[...activeCurveRows,...newRows];
-  activeCurveRows.sort((a,b)=>a.score-b.score);
-  document.getElementById('csv-import-area').style.display='none';
-  document.getElementById('csv-input').value='';
-  renderCurveTable();
-  alert(`${newRows.length} rows ${replace?'imported (replaced)':'added'}. Click Save & Apply Curve to activate.`);
-}
-function exportCSV(){
-  const blob=new Blob(['Score,Percentile\n'+activeCurveRows.map(r=>`${r.score},${r.pct}`).join('\n')],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cat_percentile_curve.csv';a.click();
 }
 
-// ── COLLEGES ──
-function renderColleges(){
-  document.getElementById('college-tbody').innerHTML=activeColleges.map((c,i)=>`
-    <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;color:var(--td)">${c.name}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12px;color:var(--tmu)">${c.tier}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:${c.co>=97?'#dc2626':c.co>=90?'#d97706':'#059669'}">${c.co}th</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12.5px;color:#059669;font-weight:600">₹${c.avg}L</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12.5px;color:var(--tm)">₹${c.max}L</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2)">
-        <button class="edit-btn" onclick="openModal(${i})">Edit</button>
-        <button class="del-btn" onclick="deleteCollege(${i})">✕</button>
-      </td>
-    </tr>`).join('');
-}
-let editIdx=null;
-function openModal(idx){
-  editIdx=idx;
-  document.getElementById('modal-title').textContent=idx===null?'Add College':'Edit College';
-  const c=idx!==null?activeColleges[idx]:{name:'',tier:'',co:'',avg:'',max:''};
-  ['name','tier','co','avg','max'].forEach(k=>document.getElementById('m-'+k).value=c[k]||'');
-  document.getElementById('modal-err').textContent='';
-  document.getElementById('college-modal').style.display='flex';
-}
-function closeModal(){document.getElementById('college-modal').style.display='none';editIdx=null;}
-async function saveCollege(){
-  const name=document.getElementById('m-name').value.trim();
-  const tier=document.getElementById('m-tier').value.trim()||'Pvt';
-  const co=parseFloat(document.getElementById('m-co').value);
-  const avg=parseFloat(document.getElementById('m-avg').value);
-  const max=parseFloat(document.getElementById('m-max').value)||avg+10;
-  if(!name){document.getElementById('modal-err').textContent='College name required.';return;}
-  if(isNaN(co)||co<50||co>100){document.getElementById('modal-err').textContent='Cut-off must be 50–100.';return;}
-  if(isNaN(avg)||avg<1){document.getElementById('modal-err').textContent='Avg package must be ≥ 1.';return;}
-  const obj={name,tier,co,avg,max};
-  if(editIdx!==null) activeColleges[editIdx]=obj;
-  else activeColleges.push(obj);
-  activeColleges.sort((a,b)=>b.co-a.co);
-  await saveToFirebase('pm_colleges', activeColleges);
-  closeModal();renderColleges();
-}
-async function deleteCollege(i){
-  if(!confirm(`Remove "${activeColleges[i].name}"?`))return;
-  activeColleges.splice(i,1);
-  await saveToFirebase('pm_colleges', activeColleges);
-  renderColleges();
-}
-
-// ── SETTINGS ──
-function renderSettings(){
-  // 1. Category relaxation
-  const cats=[{id:'GEN',label:'General / EWS',hint:'No reduction'},{id:'OBC',label:'OBC-NCL',hint:'Negative number'},{id:'SC',label:'SC',hint:'Negative number'},{id:'ST',label:'ST',hint:'Negative number'},{id:'PWD',label:'PwD',hint:'Negative number'}];
-  document.getElementById('cat-relax-fields').innerHTML=cats.map(c=>`
-    <div class="field">
-      <div class="flabel" style="font-size:11px">${c.label}</div>
-      <input class="dm-input" id="cr-${c.id}" type="number" value="${activeCatRelax[c.id]||0}" min="-50" max="0" step="1" style="font-size:15px;font-weight:700;text-align:center;padding:9px">
-      <div style="font-size:10px;color:var(--tl);text-align:center;margin-top:2px">${c.hint}</div>
-    </div>`).join('');
-  // 2. Slot offsets
-  const slots=[{id:'S1',label:'Slot 1 — Morning',color:'#4f46e5',hint:'Moderate'},{id:'S2',label:'Slot 2 — Afternoon',color:'#d97706',hint:'Hardest'},{id:'S3',label:'Slot 3 — Evening',color:'#059669',hint:'Moderate-Hard'}];
-  document.getElementById('slot-offset-fields').innerHTML=slots.map(s=>`
-    <div style="background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:12px">
-      <div style="font-size:13px;font-weight:700;color:var(--td);margin-bottom:2px">${s.label}</div>
-      <div style="font-size:11px;color:${s.color};font-weight:600;margin-bottom:8px">${s.hint}</div>
-      <div class="flabel" style="font-size:10.5px;margin-bottom:4px">Score boost (points)</div>
-      <input class="dm-input" id="so-${s.id}" type="number" value="${activeSlotOffsets[s.id]||0}" min="0" max="20" step="0.5" style="font-size:20px;font-weight:700;text-align:center;padding:8px">
-    </div>`).join('');
-  // 3. Slot labels
-  const sl={S1:'Slot 1 — Morning',S2:'Slot 2 — Afternoon',S3:'Slot 3 — Evening'};
-  document.getElementById('slot-meta-fields').innerHTML=['S1','S2','S3'].map(s=>`
-    <div style="display:grid;grid-template-columns:110px 1fr 2fr;gap:8px;align-items:center;background:var(--s2);border-radius:8px;padding:9px 10px">
-      <div style="font-size:12.5px;font-weight:700;color:var(--td)">${sl[s]}</div>
-      <div class="field"><div class="flabel" style="font-size:10px">Difficulty Tag</div><input class="dm-input" id="sm-diff-${s}" value="${activeSlotMeta[s].diff}" style="font-size:12.5px"></div>
-      <div class="field"><div class="flabel" style="font-size:10px">Description on form</div><input class="dm-input" id="sm-note-${s}" value="${activeSlotMeta[s].note}" style="font-size:12px"></div>
-    </div>`).join('');
-}
-async function saveCatRelax(){
-  ['GEN','OBC','SC','ST','PWD'].forEach(c=>{const v=parseFloat(document.getElementById('cr-'+c).value);activeCatRelax[c]=isNaN(v)?0:Math.min(0,v);});
-  await saveToFirebase('pm_catrelax', activeCatRelax);flash('relax-saved','✓ Saved');
-}
-async function saveSlotOffsets(){
-  const v={};
-  ['S1','S2','S3'].forEach(s=>{v[s]=Math.max(0,parseFloat(document.getElementById('so-'+s).value)||0);});
-  activeSlotOffsets=v;await saveToFirebase('pm_slotoffsets', v);flash('offset-saved','✓ Saved');
-}
-async function saveSlotMeta(){
-  ['S1','S2','S3'].forEach(s=>{
-    activeSlotMeta[s].diff=document.getElementById('sm-diff-'+s).value.trim()||activeSlotMeta[s].diff;
-    activeSlotMeta[s].note=document.getElementById('sm-note-'+s).value.trim()||activeSlotMeta[s].note;
-  });
-  await saveToFirebase('pm_slotmeta', activeSlotMeta);flash('slot-saved','✓ Saved');
-}
-
-// ── MASTER DIST ──
-let masterSec='varc';
-function toggleAdv(){const p=document.getElementById('adv-panel'),ic=document.getElementById('adv-icon'),open=p.style.display==='none';p.style.display=open?'block':'none';ic.textContent=open?'▾':'▸';if(open)renderMasterPanel();}
-function switchMasterSec(sec,btn){masterSec=sec;document.querySelectorAll('[id^="mbtn-"]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderMasterPanel();}
-function renderMasterPanel(){
-  const data=activeMaster[masterSec];
-  document.getElementById('master-panel').innerHTML=`
-    <table style="width:320px;border-collapse:collapse">
-      <thead><tr>
-        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">SCORE</th>
-        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">%ILE</th>
-        <th style="padding:5px 7px;border-bottom:1.5px solid var(--border)"><button onclick="addMasterRow()" style="padding:2px 9px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer">+</button></th>
-      </tr></thead>
-      <tbody>${data.map((p,i)=>`<tr>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-${i}" type="number" value="${p[0]}" step="1"></td>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="mp-${i}" type="number" value="${p[1]}" min="0" max="100" step="0.1"></td>
-        <td class="dm-td"><button class="del-btn" onclick="delMasterRow(${i})">✕</button></td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-}
-function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,Math.min(100,last[1]+.5)]);renderMasterPanel();}
-function delMasterRow(i){const d=activeMaster[masterSec];if(d.length<=4){alert('Need at least 4 points.');return;}d.splice(i,1);renderMasterPanel();}
-async function saveMasterDist(){
-  const d=activeMaster[masterSec],rows=[];
-  for(let i=0;i<d.length;i++){
-    const s=parseFloat(document.getElementById('ms-'+i).value);const p=parseFloat(document.getElementById('mp-'+i).value);
-    if(isNaN(s)||isNaN(p)){alert('All values must be numbers.');return;}rows.push([s,p]);
-  }
-  rows.sort((a,b)=>a[0]-b[0]);activeMaster[masterSec]=rows;
-  await saveToFirebase('pm_master', activeMaster);renderMasterPanel();flash('master-saved','✓ Saved & applied');
-}
-
-// ── RESET ──
-async function resetAllData(){
-  if(!confirm('Reset ALL data to factory defaults? Cannot be undone.'))return;
-  ['pm_curve','pm_curve_rows','pm_colleges','pm_slotmeta','pm_catrelax','pm_slotdist','pm_master','pm_slotoffsets'].forEach(k=>localStorage.removeItem(k));
-  activeCurveRows=DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
-  activeColleges=DEFAULT_COLLEGES.map(c=>({...c}));
-  activeSlotMeta=JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
-  activeCatRelax={...DEFAULT_CATCO};
-  activeMaster=JSON.parse(JSON.stringify(DEFAULT_MASTER));
-  activeSlotOffsets={S1:0,S2:4,S3:2};
-  // Write defaults to Firebase
-  if(fbIdToken){
-    await saveToFirebase('pm_curve_rows', activeCurveRows);
-    await saveToFirebase('pm_curve', DEFAULT_CURVE.map(p=>[...p]));
-    await saveToFirebase('pm_colleges', activeColleges);
-    await saveToFirebase('pm_slotmeta', activeSlotMeta);
-    await saveToFirebase('pm_catrelax', activeCatRelax);
-    await saveToFirebase('pm_master', activeMaster);
-    await saveToFirebase('pm_slotoffsets', activeSlotOffsets);
-  }
-  renderCurveTable();renderColleges();renderSettings();
-  alert('All data reset to factory defaults and saved to database.');
-}
-
-// ── SUBMISSIONS ──────────────────────────────────────
-let allSubs = [];
-let filteredSubs = [];
-
-async function loadSubmissions(){
-  if(!sbAccessToken){ return; }
-  document.getElementById('sub-loading').style.display='block';
-  document.getElementById('sub-table-wrap').style.display='none';
-  try{
-    const res = await fetch(
-      `${SB_URL}/rest/v1/submissions?select=*&order=created_at.desc&limit=500`,{
-        headers:{
-          'apikey':       SB_ANON_KEY,
-          'Authorization':`Bearer ${sbAccessToken}`
-        }
-      }
-    );
-    if(!res.ok) throw new Error(res.status);
-    allSubs = await res.json();
-    filteredSubs = [...allSubs];
-    renderSubStats(allSubs);
-    renderSubTable(filteredSubs);
-    document.getElementById('sub-loading').style.display='none';
-    document.getElementById('sub-table-wrap').style.display='block';
-  } catch(e){
-    document.getElementById('sub-loading').textContent='⚠ Could not load submissions. Check your login.';
-    console.warn(e);
-  }
-}
-
-function renderSubStats(rows){
-  if(!rows.length){
-    document.getElementById('sub-stats').innerHTML='';return;
-  }
-  const avg = r=>rows.reduce((s,x)=>s+x[r],0)/rows.length;
-  const pcts = rows.map(r=>r.percentile).sort((a,b)=>a-b);
-  const median = pcts[Math.floor(pcts.length/2)];
-  const above90 = rows.filter(r=>r.percentile>=90).length;
-  const stats=[
-    {label:'Total Submissions', value: rows.length, color:'#4f46e5'},
-    {label:'Avg Percentile',    value: avg('percentile').toFixed(1)+'th', color:'#0ea5e9'},
-    {label:'Median Percentile', value: median?.toFixed(1)+'th', color:'#10b981'},
-    {label:'Above 90th %ile',   value: above90+' ('+Math.round(above90/rows.length*100)+'%)', color:'#d97706'},
-  ];
-  document.getElementById('sub-stats').innerHTML=stats.map(s=>`
-    <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
-      <div style="font-size:20px;font-weight:800;color:${s.color};font-family:'Inter',sans-serif;letter-spacing:-.5px">${s.value}</div>
-      <div style="font-size:11.5px;color:var(--tmu);margin-top:3px;font-weight:500">${s.label}</div>
-    </div>`).join('');
-}
-
-function filterSubs(){
-  const search = document.getElementById('sub-search').value.toLowerCase();
-  const cat    = document.getElementById('sub-cat').value;
-  const slot   = document.getElementById('sub-slot').value;
-  const pmin   = parseFloat(document.getElementById('sub-pct-min').value)||0;
-  const pmax   = parseFloat(document.getElementById('sub-pct-max').value)||100;
-  filteredSubs = allSubs.filter(r=>{
-    if(search && !r.name?.toLowerCase().includes(search) && !r.mobile?.includes(search)) return false;
-    if(cat  && r.category!==cat)  return false;
-    if(slot && r.slot!==slot)     return false;
-    if(r.percentile<pmin || r.percentile>pmax) return false;
-    return true;
-  });
-  renderSubTable(filteredSubs);
-}
-
-function renderSubTable(rows){
-  const tbody = document.getElementById('sub-tbody');
-  if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="13" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">No submissions match the current filter.</td></tr>`;
-    document.getElementById('sub-count').textContent='0 results';
+async function loadConfig(){
+  const dbBanner = document.getElementById('db-status');
+  // If Supabase not yet configured, use cache/defaults silently
+  if(!SB_URL || SB_URL === 'YOUR_PROJECT_URL'){
+    loadFromCache();
+    if(dbBanner) dbBanner.style.display='none';
     return;
   }
-  tbody.innerHTML = rows.map((r,i)=>{
-    const d = new Date(r.created_at);
-    const date = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    const time = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    const pctColor = r.percentile>=95?'#059669':r.percentile>=85?'#4f46e5':r.percentile>=70?'#d97706':'#dc2626';
-    const tierShort = r.tier?.replace('Top ','').replace(' — ','/').replace('Candidate','').replace('Exceptional','Exc.').replace('Strong Profile','Strong').replace('Good Profile','Good').replace('Needs Improvement','Low')||'—';
-    return `<tr style="border-bottom:1px solid var(--border2)">
-      <td style="padding:7px 10px;font-size:12px;color:var(--tmu)">${i+1}</td>
-      <td style="padding:7px 10px;font-size:13px;font-weight:600;color:var(--td);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name||'—'}</td>
-      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);font-family:monospace">${r.mobile||'—'}</td>
-      <td style="padding:7px 10px"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--s3);color:var(--tm)">${r.category||'—'}</span></td>
-      <td style="padding:7px 10px;font-size:12.5px;color:var(--tmu)">${r.slot||'—'}</td>
-      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.varc_raw??'—'}</td>
-      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.lrdi_raw??'—'}</td>
-      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.qa_raw??'—'}</td>
-      <td style="padding:7px 10px;font-size:12.5px;font-weight:600;color:var(--td);text-align:center">${r.total_raw??'—'}</td>
-      <td style="padding:7px 10px;font-size:12.5px;color:#4f46e5;text-align:center">${r.normalized_score??'—'}</td>
-      <td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:${pctColor}">${r.percentile?.toFixed(1)??'—'}</span></td>
-      <td style="padding:7px 10px;font-size:11.5px;color:var(--tmu)">${tierShort}</td>
-      <td style="padding:7px 10px;font-size:11px;color:var(--tl);white-space:nowrap">${date}<br>${time}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('sub-count').textContent=`Showing ${rows.length} of ${allSubs.length} submissions`;
+  try{
+    // Supabase REST — public read, no auth needed (RLS policy allows SELECT for all)
+    const res = await fetch(`${SB_URL}/rest/v1/config?select=key,value`,{
+      headers:{
+        'apikey': SB_ANON_KEY,
+        'Authorization': `Bearer ${SB_ANON_KEY}`
+      }
+    });
+    if(!res.ok) throw new Error(`Supabase ${res.status}`);
+    const rows = await res.json();          // [{key:'pm_curve',value:[...]}, ...]
+    if(rows && rows.length){
+      const cfg = {};
+      rows.forEach(r => cfg[r.key] = r.value);
+      applyConfig(cfg);
+      if(dbBanner){ dbBanner.textContent='🟢 Live data loaded from database'; dbBanner.style.background='#d1fae5'; dbBanner.style.color='#065f46'; }
+    } else {
+      loadFromCache();
+      if(dbBanner){ dbBanner.textContent='⚠ DB is empty — using built-in defaults'; dbBanner.style.background='#fef3c7'; dbBanner.style.color='#92400e'; }
+    }
+  } catch(e){
+    loadFromCache();
+    if(dbBanner){ dbBanner.textContent='🟡 Offline — using cached data'; dbBanner.style.background='#fef3c7'; dbBanner.style.color='#92400e'; }
+    console.warn('Supabase unavailable:', e.message);
+  }
+  if(dbBanner) setTimeout(()=>{ dbBanner.style.opacity='0'; setTimeout(()=>dbBanner.style.display='none',400); },3000);
+}
+loadConfig();
+
+// ── MATH ──
+function interp(curve,x){
+  const c=Math.max(curve[0][0],Math.min(curve[curve.length-1][0],x));
+  for(let i=1;i<curve.length;i++){if(c<=curve[i][0]){const[x0,y0]=curve[i-1],[x1,y1]=curve[i];return Math.round((y0+(c-x0)/(x1-x0)*(y1-y0))*10)/10;}}
+  return curve[curve.length-1][1];
+}
+function invInterp(d,p){
+  const cp=Math.max(d[0][1],Math.min(d[d.length-1][1],p));
+  for(let i=1;i<d.length;i++){if(cp<=d[i][1]){const[x0,y0]=d[i-1],[x1,y1]=d[i];return x0+(cp-y0)/(y1-y0)*(x1-x0);}}
+  return d[d.length-1][0];
+}
+function normSec(raw,slot,sec){
+  const off=activeSlotOffsets[slot]||0;
+  const slotDist=activeMaster[sec].map(p=>[+(p[0]-off).toFixed(1),p[1]]);
+  return Math.round(invInterp(activeMaster[sec],interp(slotDist,raw))*10)/10;
+}
+function getRaw(s){return(parseInt(document.getElementById(s+'-cor').value)||0)*3-(parseInt(document.getElementById(s+'-wrong').value)||0);}
+function getNorm(s){const raw=getRaw(s);const slot=document.getElementById('f-slot').value;return slot?normSec(raw,slot,s==='lrdi'?'lrdi':s):raw;}
+
+// ── LIVE ──
+function liveCalc(sec){
+  const cor=parseInt(document.getElementById(sec+'-cor').value)||0;
+  const wrong=parseInt(document.getElementById(sec+'-wrong').value)||0;
+  const raw=(cor*3)-wrong;
+  const el=document.getElementById(sec+'-live');
+  const has=cor>0||wrong>0;
+  el.textContent=has?(raw>=0?'+'+raw:String(raw)):'—';
+  el.style.color=raw>0?'#4f46e5':raw<0?'#dc2626':'#9ca3af';
+  document.getElementById(sec+'-score').textContent=has?raw:'—';
+  document.getElementById(sec+'-acc').textContent=(cor+wrong)>0?Math.round(cor/(cor+wrong)*100)+'% acc':'';
+  updateTotalBar();
+}
+function updateTotalBar(){
+  const slot=document.getElementById('f-slot').value;
+  const vr=getRaw('varc'),lr=getRaw('lrdi'),qr=getRaw('qa'),tr=vr+lr+qr;
+  const vn=Math.round(getNorm('varc')*10)/10,ln=Math.round(getNorm('lrdi')*10)/10,qn=Math.round(getNorm('qa')*10)/10;
+  const tn=Math.round((vn+ln+qn)*10)/10;
+  const any=['varc','lrdi','qa'].reduce((s,sec)=>s+(parseInt(document.getElementById(sec+'-cor').value)||0)+(parseInt(document.getElementById(sec+'-wrong').value)||0),0);
+  if(!any){document.getElementById('tb-num').textContent='—';document.getElementById('tb-detail').textContent='Fill in your section scores above';return;}
+  document.getElementById('tb-num').textContent=slot?tn:tr;
+  document.getElementById('tb-detail').innerHTML=slot?`Raw <strong>${tr}</strong> → Normalized <strong style="color:#4f46e5">${tn}</strong><br>VARC ${Math.round(vn)} · LRDI ${Math.round(ln)} · QA ${Math.round(qn)}`:`VARC ${vr} + LRDI ${lr} + QA ${qr}`;
+}
+function updateSlotHint(){
+  const s=document.getElementById('f-slot').value;
+  if(!s){document.getElementById('slot-hint').textContent='';return;}
+  const m=activeSlotMeta[s];
+  document.getElementById('slot-hint').innerHTML=`<strong style="color:${s==='S2'?'#b45309':s==='S3'?'#065f46':'#4f46e5'}">${m.diff}</strong> — ${m.note}`;
+  liveCalc('varc');liveCalc('lrdi');liveCalc('qa');
+}
+function validateMobile(input){
+  const v=input.value.trim(),hint=document.getElementById('mobile-hint');
+  input.classList.remove('valid','invalid');
+  if(!v.length){hint.textContent='';hint.className='field-hint';return;}
+  if(/^\d{10}$/.test(v)){input.classList.add('valid');hint.textContent='✓ Valid mobile number';hint.className='field-hint ok';}
+  else{input.classList.add('invalid');hint.textContent=v.length<10?`${10-v.length} more digit${10-v.length>1?'s':''} needed`:'Only digits allowed';hint.className='field-hint err';}
+}
+function showErr(m){document.getElementById('err-msg').textContent=m;}
+function clearErr(){document.getElementById('err-msg').textContent='';}
+
+// ── PREDICT ──
+let allCollegeRows=[];
+function predict(){
+  clearErr();
+  const name=document.getElementById('f-name').value.trim();
+  const mobile=document.getElementById('f-mobile').value.trim();
+  const slot=document.getElementById('f-slot').value;
+  const cat=document.getElementById('f-cat').value;
+  const tc=document.getElementById('f-tc').checked;
+  if(!name){showErr('Please enter your full name');return;}
+  if(!/^\d{10}$/.test(mobile)){showErr('Please enter a valid 10-digit mobile number');return;}
+  if(!slot){showErr('Please select a slot');return;}
+  if(!cat){showErr('Please select your category');return;}
+  if(!tc){showErr('Please accept the terms & conditions');return;}
+  const va=(parseInt(document.getElementById('varc-cor').value)||0)+(parseInt(document.getElementById('varc-wrong').value)||0);
+  const la=(parseInt(document.getElementById('lrdi-cor').value)||0)+(parseInt(document.getElementById('lrdi-wrong').value)||0);
+  const qa=(parseInt(document.getElementById('qa-cor').value)||0)+(parseInt(document.getElementById('qa-wrong').value)||0);
+  if(va+la+qa===0){showErr('Please enter at least one section score');return;}
+
+  const vr=getRaw('varc'),lr=getRaw('lrdi'),qr=getRaw('qa'),tr=vr+lr+qr;
+  const vn=Math.round(getNorm('varc')*10)/10,ln=Math.round(getNorm('lrdi')*10)/10,qn=Math.round(getNorm('qa')*10)/10;
+  const tn=Math.round((vn+ln+qn)*10)/10;
+  const pct=interp(activeCurve,Math.max(0,tn));
+  const catR=activeCatRelax[cat]||0;
+  const meta=activeSlotMeta[slot];
+  const delta=Math.round((tn-tr)*10)/10;
+
+  let tier;
+  if(pct>=99)tier={l:'Top 1% — Elite Candidate',c:'t-elite'};
+  else if(pct>=97)tier={l:'Top 3% — Exceptional',c:'t-strong'};
+  else if(pct>=95)tier={l:'Top 5% — Strong Profile',c:'t-good'};
+  else if(pct>=90)tier={l:'Top 10% — Good Profile',c:'t-avg'};
+  else tier={l:'Needs Improvement',c:'t-below'};
+
+  document.getElementById('rh-greeting').textContent=`Hello, ${name} 👋`;
+  document.getElementById('rh-pct').textContent=pct.toFixed(1);
+  const te=document.getElementById('rh-tier');te.textContent=tier.l;te.className='rh-tier '+tier.c;
+  document.getElementById('result-meta').textContent=`CAT 2025 · ${meta.lbl} · Category: ${cat} · 2026 Cut-offs`;
+  document.getElementById('rh-stats').innerHTML=`
+    <div class="rh-stat"><div class="rhs-val">${vr}<span style="font-size:12px;color:#4f46e5;margin-left:4px">→${Math.round(vn)}</span></div><div class="rhs-sub">VARC Score</div></div>
+    <div class="rh-stat"><div class="rhs-val">${lr}<span style="font-size:12px;color:#0ea5e9;margin-left:4px">→${Math.round(ln)}</span></div><div class="rhs-sub">LRDI Score</div></div>
+    <div class="rh-stat"><div class="rhs-val">${qr}<span style="font-size:12px;color:#10b981;margin-left:4px">→${Math.round(qn)}</span></div><div class="rhs-sub">QA Score</div></div>`;
+
+  const boostStr=delta>0?`<strong style="color:#059669">+${delta} pt boost</strong> (${meta.diff} slot)`:delta<0?`<strong style="color:#dc2626">${delta} pt adj</strong> (${meta.diff} slot)`:`No adjustment (${meta.diff} slot)`;
+  document.getElementById('norm-text').innerHTML=`<strong>Slot Normalization (IIM EPN):</strong> Raw <strong>${tr}</strong> → Normalized <strong style="color:#4f46e5">${tn}</strong> · ${boostStr}`;
+
+  allCollegeRows=activeColleges.map(c=>{
+    const effCo=Math.max(0,c.co+catR);const gap=pct-effCo;
+    let pred,cls,prob;
+    if(gap>=2){pred='match';cls='cb-match';prob=Math.min(85,55+gap*3);}
+    else if(gap>=-3){pred='reach';cls='cb-reach';prob=Math.max(20,40+gap*5);}
+    else if(gap>=-8){pred='safety';cls='cb-safety';prob=Math.max(5,25+gap*2);}
+    else return null;
+    prob=Math.round(Math.min(90,prob));
+    return{...c,pred,cls,prob,effCo,pbCls:prob>=60?'ph':prob>=35?'pm':'pl'};
+  }).filter(Boolean).sort((a,b)=>b.effCo-a.effCo);
+
+  renderColleges(allCollegeRows);
+  document.querySelectorAll('.ftab').forEach((t,i)=>t.classList.toggle('on',i===0));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('visible'));
+  document.getElementById('page-result').classList.add('visible');
+  window.scrollTo(0,0);
+
+  // Save submission to Supabase (fire-and-forget, doesn't block UI)
+  saveSubmission({
+    name, mobile, category:cat,
+    gender: document.getElementById('f-gender').value||'',
+    slot,
+    varc_correct: parseInt(document.getElementById('varc-cor').value)||0,
+    varc_wrong:   parseInt(document.getElementById('varc-wrong').value)||0,
+    lrdi_correct: parseInt(document.getElementById('lrdi-cor').value)||0,
+    lrdi_wrong:   parseInt(document.getElementById('lrdi-wrong').value)||0,
+    qa_correct:   parseInt(document.getElementById('qa-cor').value)||0,
+    qa_wrong:     parseInt(document.getElementById('qa-wrong').value)||0,
+    varc_raw: vr, lrdi_raw: lr, qa_raw: qr,
+    total_raw: tr, normalized_score: tn,
+    percentile: parseFloat(pct.toFixed(1)),
+    tier: tier.l
+  });
 }
 
-function exportSubCSV(){
-  if(!filteredSubs.length){alert('No data to export.');return;}
-  const headers=['Name','Mobile','Category','Gender','Slot','VARC Raw','LRDI Raw','QA Raw','Total Raw','Normalized','Percentile','Tier','Date'];
-  const rows = filteredSubs.map(r=>[
-    r.name, r.mobile, r.category, r.gender, r.slot,
-    r.varc_raw, r.lrdi_raw, r.qa_raw, r.total_raw,
-    r.normalized_score, r.percentile, r.tier,
-    new Date(r.created_at).toLocaleString('en-IN')
-  ].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(','));
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `submissions_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+// ── SAVE SUBMISSION ──────────────────────────────────
+async function saveSubmission(data){
+  if(!SB_URL || SB_URL==='YOUR_PROJECT_URL') return; // not configured
+  try{
+    await fetch(`${SB_URL}/rest/v1/submissions`,{
+      method:'POST',
+      headers:{
+        'apikey':       SB_ANON_KEY,
+        'Authorization':`Bearer ${SB_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer':       'return=minimal'
+      },
+      body: JSON.stringify(data)
+    });
+  } catch(e){ console.warn('Submission save failed:',e.message); }
 }
-
-// Load submissions when tab is switched to
-const _origSwitchTab = switchTab;
-switchTab = function(tab, btn){
-  _origSwitchTab(tab, btn);
-  if(tab==='submissions') loadSubmissions();
+function goBack(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('visible'));
+  document.getElementById('page-form').classList.add('visible');
+  window.scrollTo(0,0);
 }
-
-function flash(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;setTimeout(()=>el.textContent='',2500);}
-
-// ── INIT ──
-renderCurveTable();
-renderColleges();
+function renderColleges(rows){
+  document.getElementById('col-count').textContent=rows.length+' colleges matched';
+  document.getElementById('col-body').innerHTML=rows.length
+    ?rows.map(c=>`<tr data-pred="${c.pred}">
+      <td><div class="cn">${c.name}</div><div class="cm">Max ₹${c.max}L</div></td>
+      <td><span class="tiertag">${c.tier}</span></td>
+      <td><span style="font-size:13px;font-weight:700;color:${c.effCo>=97?'#dc2626':c.effCo>=90?'#d97706':'#059669'}">${c.effCo.toFixed(0)}th</span></td>
+      <td><span class="catbadge ${c.cls}">${c.pred}</span></td>
+      <td><div class="probcell"><div class="probbar"><div class="probfill ${c.pbCls}" style="width:${c.prob}%"></div></div><span class="probnum">${c.prob}%</span></div></td>
+      <td style="font-size:13px;font-weight:700;color:#059669">₹${c.avg}L</td>
+    </tr>`).join('')
+    :`<tr><td colspan="6" class="empty-row">Score too low — keep preparing! 💪</td></tr>`;
+}
+function filterColleges(type,btn){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  renderColleges(type==='all'?allCollegeRows:allCollegeRows.filter(r=>r.pred===type));
+}
 </script>
-</div><!-- /app -->
 </body>
 </html>
