@@ -806,8 +806,10 @@ let filteredSubs = [];
 
 async function loadSubmissions(){
   if(!sbAccessToken){ return; }
-  document.getElementById('sub-loading').style.display='block';
-  document.getElementById('sub-table-wrap').style.display='none';
+  const loadEl = document.getElementById('sub-loading');
+  const tableEl = document.getElementById('sub-table-wrap');
+  if(loadEl) { loadEl.textContent='⏳ Loading submissions...'; loadEl.style.display='block'; }
+  if(tableEl) tableEl.style.display='none';
   try{
     const res = await fetch(
       `${SB_URL}/rest/v1/submissions?select=*&order=created_at.desc&limit=500`,{
@@ -817,34 +819,36 @@ async function loadSubmissions(){
         }
       }
     );
-    if(!res.ok) throw new Error(res.status);
+    if(!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
     allSubs = await res.json();
     filteredSubs = [...allSubs];
-    renderSubStats(allSubs);
-    renderSubTable(filteredSubs);
-    document.getElementById('sub-loading').style.display='none';
-    document.getElementById('sub-table-wrap').style.display='block';
+    console.log('Submissions loaded:', allSubs.length, 'rows', allSubs[0]);
+    try{ renderSubStats(allSubs); } catch(e){ console.error('renderSubStats error:', e); }
+    try{ renderSubTable(filteredSubs); } catch(e){ console.error('renderSubTable error:', e); }
+    if(loadEl)  loadEl.style.display='none';
+    if(tableEl) tableEl.style.display='block';
   } catch(e){
-    document.getElementById('sub-loading').textContent='⚠ Could not load submissions. Check your login.';
-    console.warn(e);
+    if(loadEl) loadEl.textContent='⚠ Error: '+e.message;
+    console.error('loadSubmissions error:', e);
   }
 }
 
 function renderSubStats(rows){
-  if(!rows.length){
-    document.getElementById('sub-stats').innerHTML='';return;
-  }
-  const avg = r=>rows.reduce((s,x)=>s+x[r],0)/rows.length;
-  const pcts = rows.map(r=>r.percentile).sort((a,b)=>a-b);
-  const median = pcts[Math.floor(pcts.length/2)];
-  const above90 = rows.filter(r=>r.percentile>=90).length;
+  const el = document.getElementById('sub-stats');
+  if(!el) return;
+  if(!rows || !rows.length){ el.innerHTML=''; return; }
+  const validPcts = rows.map(r=>Number(r.percentile)).filter(p=>!isNaN(p) && p>0);
+  const avg    = validPcts.length ? (validPcts.reduce((a,b)=>a+b,0)/validPcts.length).toFixed(1) : '—';
+  const sorted = [...validPcts].sort((a,b)=>a-b);
+  const median = sorted.length ? sorted[Math.floor(sorted.length/2)].toFixed(1) : '—';
+  const above90 = validPcts.filter(p=>p>=90).length;
   const stats=[
-    {label:'Total Submissions', value: rows.length, color:'#4f46e5'},
-    {label:'Avg Percentile',    value: avg('percentile').toFixed(1)+'th', color:'#0ea5e9'},
-    {label:'Median Percentile', value: median?.toFixed(1)+'th', color:'#10b981'},
-    {label:'Above 90th %ile',   value: above90+' ('+Math.round(above90/rows.length*100)+'%)', color:'#d97706'},
+    {label:'Total Submissions', value:rows.length,                                         color:'#4f46e5'},
+    {label:'Avg Percentile',    value:avg+'th',                                             color:'#0ea5e9'},
+    {label:'Median Percentile', value:median+'th',                                          color:'#10b981'},
+    {label:'Above 90th %ile',   value:above90+' ('+Math.round(above90/rows.length*100)+'%)',color:'#d97706'},
   ];
-  document.getElementById('sub-stats').innerHTML=stats.map(s=>`
+  el.innerHTML=stats.map(s=>`
     <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
       <div style="font-size:20px;font-weight:800;color:${s.color};font-family:'Inter',sans-serif;letter-spacing:-.5px">${s.value}</div>
       <div style="font-size:11.5px;color:var(--tmu);margin-top:3px;font-weight:500">${s.label}</div>
@@ -878,21 +882,27 @@ function filterSubs(){
 }
 
 function renderSubTable(rows){
-  const tbody = document.getElementById('sub-tbody');
-  if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="13" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">No submissions match the current filter.</td></tr>`;
-    document.getElementById('sub-count').textContent='0 results';
+  const tbody  = document.getElementById('sub-tbody');
+  const countEl = document.getElementById('sub-count');
+  if(!tbody){ console.error('sub-tbody not found in DOM'); return; }
+  if(!rows || !rows.length){
+    tbody.innerHTML=`<tr><td colspan="13" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">No submissions found.</td></tr>`;
+    if(countEl) countEl.textContent='0 results';
     return;
   }
   tbody.innerHTML = rows.map((r,i)=>{
     const d = new Date(r.created_at);
     const date = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
     const time = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-    const pctColor = r.percentile>=95?'#059669':r.percentile>=85?'#4f46e5':r.percentile>=70?'#d97706':'#dc2626';
-    const tierShort = r.tier?.replace('Top ','').replace(' — ','/').replace('Candidate','').replace('Exceptional','Exc.').replace('Strong Profile','Strong').replace('Good Profile','Good').replace('Needs Improvement','Low')||'—';
+    const pct  = Number(r.percentile)||0;
+    const pctColor = pct>=95?'#059669':pct>=85?'#4f46e5':pct>=70?'#d97706':'#dc2626';
+    const tierShort = (r.tier||'—')
+      .replace('Top 1%','Top 1%').replace('Top 3%','Top 3%').replace('Top 5%','Top 5%')
+      .replace('Top 10%','Top 10%').replace(' — Elite Candidate','').replace(' — Exceptional','')
+      .replace(' — Strong Profile','').replace(' — Good Profile','').replace('Needs Improvement','Low');
     return `<tr style="border-bottom:1px solid var(--border2)">
       <td style="padding:7px 10px;font-size:12px;color:var(--tmu)">${i+1}</td>
-      <td style="padding:7px 10px;font-size:13px;font-weight:600;color:var(--td);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name||'—'}</td>
+      <td style="padding:7px 10px;font-size:13px;font-weight:600;color:var(--td)">${r.name||'—'}</td>
       <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);font-family:monospace">${r.mobile||'—'}</td>
       <td style="padding:7px 10px"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--s3);color:var(--tm)">${r.category||'—'}</span></td>
       <td style="padding:7px 10px;font-size:12.5px;color:var(--tmu)">${r.slot||'—'}</td>
@@ -901,12 +911,12 @@ function renderSubTable(rows){
       <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.qa_raw??'—'}</td>
       <td style="padding:7px 10px;font-size:12.5px;font-weight:600;color:var(--td);text-align:center">${r.total_raw??'—'}</td>
       <td style="padding:7px 10px;font-size:12.5px;color:#4f46e5;text-align:center">${r.normalized_score??'—'}</td>
-      <td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:${pctColor}">${r.percentile?.toFixed(1)??'—'}</span></td>
-      <td style="padding:7px 10px;font-size:11.5px;color:var(--tmu)">${tierShort}</td>
+      <td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:${pctColor}">${pct.toFixed(1)}</span></td>
+      <td style="padding:7px 10px;font-size:11.5px;color:var(--tmu);white-space:nowrap">${tierShort}</td>
       <td style="padding:7px 10px;font-size:11px;color:var(--tl);white-space:nowrap">${date}<br>${time}</td>
     </tr>`;
   }).join('');
-  document.getElementById('sub-count').textContent=`Showing ${rows.length} of ${allSubs.length} submissions`;
+  if(countEl) countEl.textContent=`Showing ${rows.length} of ${allSubs.length} submissions`;
 }
 
 function exportSubCSV(){
