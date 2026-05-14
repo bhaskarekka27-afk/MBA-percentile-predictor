@@ -134,9 +134,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 <!-- TABS -->
 <div class="tabs-wrap">
   <div class="tabs">
-    <button class="dmtab on" id="dtab-curve"    onclick="switchTab('curve',this)">📈 Score vs Percentile</button>
-    <button class="dmtab"    id="dtab-colleges" onclick="switchTab('colleges',this)">🏛 Colleges</button>
-    <button class="dmtab"    id="dtab-settings" onclick="switchTab('settings',this)">⚙ Settings</button>
+    <button class="dmtab on" id="dtab-curve"       onclick="switchTab('curve',this)">📈 Score vs Percentile</button>
+    <button class="dmtab"    id="dtab-colleges"    onclick="switchTab('colleges',this)">🏛 Colleges</button>
+    <button class="dmtab"    id="dtab-settings"    onclick="switchTab('settings',this)">⚙ Settings</button>
+    <button class="dmtab"    id="dtab-submissions" onclick="switchTab('submissions',this)">👥 Submissions</button>
   </div>
 </div>
 
@@ -276,7 +277,75 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
     </div>
 
-  </div><!-- /panel-settings -->
+  <!-- ═══ TAB 4: SUBMISSIONS ═══ -->
+  <div class="panel" id="panel-submissions">
+
+    <!-- Stats bar -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px" id="sub-stats"></div>
+
+    <!-- Filters -->
+    <div class="dm-card">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field" style="flex:1;min-width:160px">
+          <div class="flabel">Search name / mobile</div>
+          <input class="dm-input" id="sub-search" placeholder="Type to filter..." oninput="filterSubs()">
+        </div>
+        <div class="field">
+          <div class="flabel">Category</div>
+          <select class="dm-input" id="sub-cat" onchange="filterSubs()" style="cursor:pointer">
+            <option value="">All</option>
+            <option>GEN</option><option>OBC</option><option>SC</option><option>ST</option><option>PWD</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flabel">Slot</div>
+          <select class="dm-input" id="sub-slot" onchange="filterSubs()" style="cursor:pointer">
+            <option value="">All</option>
+            <option value="S1">Slot 1</option><option value="S2">Slot 2</option><option value="S3">Slot 3</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flabel">Percentile ≥</div>
+          <input class="dm-input" id="sub-pct-min" type="number" min="0" max="100" placeholder="0" style="width:80px" oninput="filterSubs()">
+        </div>
+        <div class="field">
+          <div class="flabel">Percentile ≤</div>
+          <input class="dm-input" id="sub-pct-max" type="number" min="0" max="100" placeholder="100" style="width:80px" oninput="filterSubs()">
+        </div>
+        <button class="dm-btn-pri" onclick="exportSubCSV()" style="align-self:flex-end">⬇ Export CSV</button>
+        <button class="dm-btn-sec" onclick="loadSubmissions()" style="align-self:flex-end">↺ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="dm-card" style="padding:0;overflow:hidden">
+      <div id="sub-loading" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">Loading submissions...</div>
+      <div style="overflow-x:auto;display:none" id="sub-table-wrap">
+        <table style="width:100%;border-collapse:collapse;min-width:800px">
+          <thead>
+            <tr style="background:var(--s2)">
+              <th class="dm-th">#</th>
+              <th class="dm-th">Name</th>
+              <th class="dm-th">Mobile</th>
+              <th class="dm-th">Category</th>
+              <th class="dm-th">Slot</th>
+              <th class="dm-th">VARC</th>
+              <th class="dm-th">LRDI</th>
+              <th class="dm-th">QA</th>
+              <th class="dm-th">Raw</th>
+              <th class="dm-th">Norm</th>
+              <th class="dm-th">Percentile</th>
+              <th class="dm-th">Tier</th>
+              <th class="dm-th">Date</th>
+            </tr>
+          </thead>
+          <tbody id="sub-tbody"></tbody>
+        </table>
+        <div style="padding:.7rem 1rem;font-size:12px;color:var(--tmu);border-top:1px solid var(--border)" id="sub-count"></div>
+      </div>
+    </div>
+
+  </div>
 
 </div><!-- /content -->
 
@@ -668,7 +737,130 @@ async function resetAllData(){
   alert('All data reset to factory defaults and saved to database.');
 }
 
-function flash(id,msg){const el=document.getElementById(id);el.textContent=msg;setTimeout(()=>el.textContent='',2500);}
+// ── SUBMISSIONS ──────────────────────────────────────
+let allSubs = [];
+let filteredSubs = [];
+
+async function loadSubmissions(){
+  if(!sbAccessToken){ return; }
+  document.getElementById('sub-loading').style.display='block';
+  document.getElementById('sub-table-wrap').style.display='none';
+  try{
+    const res = await fetch(
+      `${SB_URL}/rest/v1/submissions?select=*&order=created_at.desc&limit=500`,{
+        headers:{
+          'apikey':       SB_ANON_KEY,
+          'Authorization':`Bearer ${sbAccessToken}`
+        }
+      }
+    );
+    if(!res.ok) throw new Error(res.status);
+    allSubs = await res.json();
+    filteredSubs = [...allSubs];
+    renderSubStats(allSubs);
+    renderSubTable(filteredSubs);
+    document.getElementById('sub-loading').style.display='none';
+    document.getElementById('sub-table-wrap').style.display='block';
+  } catch(e){
+    document.getElementById('sub-loading').textContent='⚠ Could not load submissions. Check your login.';
+    console.warn(e);
+  }
+}
+
+function renderSubStats(rows){
+  if(!rows.length){
+    document.getElementById('sub-stats').innerHTML='';return;
+  }
+  const avg = r=>rows.reduce((s,x)=>s+x[r],0)/rows.length;
+  const pcts = rows.map(r=>r.percentile).sort((a,b)=>a-b);
+  const median = pcts[Math.floor(pcts.length/2)];
+  const above90 = rows.filter(r=>r.percentile>=90).length;
+  const stats=[
+    {label:'Total Submissions', value: rows.length, color:'#4f46e5'},
+    {label:'Avg Percentile',    value: avg('percentile').toFixed(1)+'th', color:'#0ea5e9'},
+    {label:'Median Percentile', value: median?.toFixed(1)+'th', color:'#10b981'},
+    {label:'Above 90th %ile',   value: above90+' ('+Math.round(above90/rows.length*100)+'%)', color:'#d97706'},
+  ];
+  document.getElementById('sub-stats').innerHTML=stats.map(s=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+      <div style="font-size:20px;font-weight:800;color:${s.color};font-family:'Inter',sans-serif;letter-spacing:-.5px">${s.value}</div>
+      <div style="font-size:11.5px;color:var(--tmu);margin-top:3px;font-weight:500">${s.label}</div>
+    </div>`).join('');
+}
+
+function filterSubs(){
+  const search = document.getElementById('sub-search').value.toLowerCase();
+  const cat    = document.getElementById('sub-cat').value;
+  const slot   = document.getElementById('sub-slot').value;
+  const pmin   = parseFloat(document.getElementById('sub-pct-min').value)||0;
+  const pmax   = parseFloat(document.getElementById('sub-pct-max').value)||100;
+  filteredSubs = allSubs.filter(r=>{
+    if(search && !r.name?.toLowerCase().includes(search) && !r.mobile?.includes(search)) return false;
+    if(cat  && r.category!==cat)  return false;
+    if(slot && r.slot!==slot)     return false;
+    if(r.percentile<pmin || r.percentile>pmax) return false;
+    return true;
+  });
+  renderSubTable(filteredSubs);
+}
+
+function renderSubTable(rows){
+  const tbody = document.getElementById('sub-tbody');
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="13" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">No submissions match the current filter.</td></tr>`;
+    document.getElementById('sub-count').textContent='0 results';
+    return;
+  }
+  tbody.innerHTML = rows.map((r,i)=>{
+    const d = new Date(r.created_at);
+    const date = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const time = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const pctColor = r.percentile>=95?'#059669':r.percentile>=85?'#4f46e5':r.percentile>=70?'#d97706':'#dc2626';
+    const tierShort = r.tier?.replace('Top ','').replace(' — ','/').replace('Candidate','').replace('Exceptional','Exc.').replace('Strong Profile','Strong').replace('Good Profile','Good').replace('Needs Improvement','Low')||'—';
+    return `<tr style="border-bottom:1px solid var(--border2)">
+      <td style="padding:7px 10px;font-size:12px;color:var(--tmu)">${i+1}</td>
+      <td style="padding:7px 10px;font-size:13px;font-weight:600;color:var(--td);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name||'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);font-family:monospace">${r.mobile||'—'}</td>
+      <td style="padding:7px 10px"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--s3);color:var(--tm)">${r.category||'—'}</span></td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tmu)">${r.slot||'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.varc_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.lrdi_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.qa_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;font-weight:600;color:var(--td);text-align:center">${r.total_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:#4f46e5;text-align:center">${r.normalized_score??'—'}</td>
+      <td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:${pctColor}">${r.percentile?.toFixed(1)??'—'}</span></td>
+      <td style="padding:7px 10px;font-size:11.5px;color:var(--tmu)">${tierShort}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--tl);white-space:nowrap">${date}<br>${time}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('sub-count').textContent=`Showing ${rows.length} of ${allSubs.length} submissions`;
+}
+
+function exportSubCSV(){
+  if(!filteredSubs.length){alert('No data to export.');return;}
+  const headers=['Name','Mobile','Category','Gender','Slot','VARC Raw','LRDI Raw','QA Raw','Total Raw','Normalized','Percentile','Tier','Date'];
+  const rows = filteredSubs.map(r=>[
+    r.name, r.mobile, r.category, r.gender, r.slot,
+    r.varc_raw, r.lrdi_raw, r.qa_raw, r.total_raw,
+    r.normalized_score, r.percentile, r.tier,
+    new Date(r.created_at).toLocaleString('en-IN')
+  ].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `submissions_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// Load submissions when tab is switched to
+const _origSwitchTab = switchTab;
+switchTab = function(tab, btn){
+  _origSwitchTab(tab, btn);
+  if(tab==='submissions') loadSubmissions();
+}
+
+function flash(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;setTimeout(()=>el.textContent='',2500);}
 
 // ── INIT ──
 renderCurveTable();
