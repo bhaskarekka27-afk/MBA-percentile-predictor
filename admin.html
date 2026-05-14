@@ -79,23 +79,57 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 </head>
 <body>
 
-<!-- ADMIN HEADER — no main site nav -->
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg)">
+  <div style="background:var(--white);border-radius:16px;padding:2rem 2.2rem;width:380px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.1);border:1.5px solid var(--border)">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="width:44px;height:44px;background:var(--accent);border-radius:10px;display:grid;place-items:center;font-size:20px;margin:0 auto .8rem">⚙</div>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--td)">Admin Login</div>
+      <div style="font-size:12.5px;color:var(--tmu);margin-top:3px">PredictPro Data Manager</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--tm);margin-bottom:5px">Email</div>
+        <input id="login-email" type="email" placeholder="admin@example.com" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--tm);margin-bottom:5px">Password</div>
+        <input id="login-password" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+    </div>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Sign In</button>
+    <div id="login-err" style="font-size:12px;color:var(--bad);text-align:center;margin-top:8px;min-height:16px"></div>
+    <div style="font-size:11px;color:var(--tl);text-align:center;margin-top:12px">Create admin users in Firebase Console → Authentication</div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="app" style="display:none">
+
+<!-- ADMIN HEADER -->
 <div class="admin-header">
   <div class="admin-title-wrap">
     <div class="admin-badge">⚙</div>
     <div>
       <div class="admin-title">Data Manager</div>
-      <div class="admin-sub">PredictPro · All changes saved to browser · Applied immediately to predictions</div>
+      <div class="admin-sub">PredictPro · Changes saved to Firebase DB + browser cache</div>
     </div>
   </div>
   <div class="admin-actions">
-    <button class="btn-reset" onclick="resetAllData()">↺ Reset All to Defaults</button>
+    <div id="admin-user-wrap" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--tmu)">
+      <span>👤</span><span id="admin-user"></span>
+      <button onclick="doLogout()" style="padding:4px 10px;background:var(--s3);border:1.5px solid var(--border);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--tm);cursor:pointer">Logout</button>
+    </div>
+    <button class="btn-reset" onclick="resetAllData()">↺ Reset All</button>
     <a class="btn-back" href="mba_predictor_final.html">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Back to Predictor
     </a>
   </div>
 </div>
+
+<!-- DB status bar -->
+<div id="db-load-status" style="display:none;font-size:12px;font-weight:500;padding:6px 1.5rem;border-bottom:1px solid var(--border);background:var(--s2)"></div>
 
 <!-- TABS -->
 <div class="tabs-wrap">
@@ -266,7 +300,127 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 </div>
 
 <script>
-// ── DEFAULT DATA (same as predictor) ──
+// ════════════════════════════════════════════════════
+//  SUPABASE CONFIG — fill in from:
+//  supabase.com → Project → Settings → API
+// ════════════════════════════════════════════════════
+const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';   // e.g. https://xyzabc.supabase.co
+const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';      // long string starting with eyJ...
+// ════════════════════════════════════════════════════
+
+// Supabase Auth endpoint
+const SB_SIGNIN = `${SB_URL}/auth/v1/token?grant_type=password`;
+
+let sbAccessToken = null;  // set after login
+
+// ── AUTH ─────────────────────────────────────────────
+async function doLogin(){
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-err');
+  const btnEl    = document.getElementById('login-btn');
+  if(!email||!password){errEl.textContent='Enter email and password.';return;}
+  btnEl.textContent='Signing in...';btnEl.disabled=true;errEl.textContent='';
+  try{
+    const res = await fetch(SB_SIGNIN,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON_KEY},
+      body:JSON.stringify({email,password})
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){
+      errEl.textContent = data.error_description || data.msg || 'Invalid credentials';
+      btnEl.textContent='Sign In'; btnEl.disabled=false; return;
+    }
+    sbAccessToken = data.access_token;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('admin-user').textContent=email;
+    document.getElementById('admin-user-wrap').style.display='flex';
+    await loadFromSupabase();
+  } catch(e){
+    errEl.textContent='Network error. Check your connection.';
+    btnEl.textContent='Sign In'; btnEl.disabled=false;
+  }
+}
+function doLogout(){
+  sbAccessToken=null;
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-password').value='';
+}
+
+// ── DB READ ───────────────────────────────────────────
+async function loadFromSupabase(){
+  const statusEl = document.getElementById('db-load-status');
+  statusEl.textContent='⏳ Loading from database...'; statusEl.style.display='block'; statusEl.style.color='var(--accent)';
+  try{
+    const res = await fetch(`${SB_URL}/rest/v1/config?select=key,value`,{
+      headers:{
+        'apikey': SB_ANON_KEY,
+        'Authorization': `Bearer ${sbAccessToken||SB_ANON_KEY}`
+      }
+    });
+    if(!res.ok) throw new Error(res.status);
+    const rows = await res.json();
+    if(rows && rows.length){
+      const d = {};
+      rows.forEach(r => d[r.key]=r.value);
+      if(d.pm_curve_rows)  activeCurveRows   = d.pm_curve_rows;
+      if(d.pm_colleges)    activeColleges    = d.pm_colleges;
+      if(d.pm_slotmeta)    activeSlotMeta    = d.pm_slotmeta;
+      if(d.pm_catrelax)    activeCatRelax    = d.pm_catrelax;
+      if(d.pm_master)      activeMaster      = d.pm_master;
+      if(d.pm_slotoffsets) activeSlotOffsets = d.pm_slotoffsets;
+      rows.forEach(r => localStorage.setItem(r.key, JSON.stringify(r.value)));
+    }
+    statusEl.textContent='✅ Database loaded successfully'; statusEl.style.color='var(--ok)';
+    setTimeout(()=>statusEl.style.display='none', 2500);
+    renderCurveTable(); renderColleges();
+  } catch(e){
+    statusEl.textContent='⚠ Could not load from DB — showing local cache'; statusEl.style.color='var(--warn)';
+    console.warn(e);
+  }
+}
+
+// ── DB WRITE ──────────────────────────────────────────
+// Supabase upsert — inserts if key doesn't exist, updates if it does
+async function saveToSupabase(key, value){
+  // Always write to localStorage immediately
+  localStorage.setItem(key, JSON.stringify(value));
+  if(!sbAccessToken || !SB_URL || SB_URL==='YOUR_PROJECT_URL') return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/config`,{
+      method:'POST',
+      headers:{
+        'apikey':          SB_ANON_KEY,
+        'Authorization':   `Bearer ${sbAccessToken}`,
+        'Content-Type':    'application/json',
+        'Prefer':          'resolution=merge-duplicates'  // upsert
+      },
+      body: JSON.stringify({key, value, updated_at: new Date().toISOString()})
+    });
+  } catch(e){ console.warn('Supabase write failed for', key, e.message); }
+}
+
+// Alias so the rest of the code stays clean
+const saveToFirebase = saveToSupabase;
+
+// ── ENTER key on login ──
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('login-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  // If Supabase not configured → skip login, work offline
+  if(!SB_URL || SB_URL==='YOUR_PROJECT_URL'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('db-load-status').textContent='⚠ Supabase not configured — changes saved to browser only';
+    document.getElementById('db-load-status').style.display='block';
+    document.getElementById('db-load-status').style.color='var(--warn)';
+    document.getElementById('admin-user-wrap').style.display='none';
+  }
+});
+
+// ── DEFAULT DATA ──
 const DEFAULT_CURVE=[[0,.1],[3,.5],[6,1],[8,2],[10,3.5],[11,5],[12.5,55],[16.5,60],[19,65],[21.5,70],[27.5,75],[36,80],[43,85],[53,90],[67,95],[72.5,97],[81,98],[87,99],[114.5,99.5],[118,99.9],[122,100]];
 const DEFAULT_CATCO={GEN:0,OBC:-8,SC:-18,ST:-22,PWD:-25};
 const DEFAULT_MASTER={
@@ -324,7 +478,7 @@ function renderCurveTable(){
 }
 function addCurveRow(){activeCurveRows.push({score:0,pct:0});renderCurveTable();}
 function deleteCurveRow(i){if(activeCurveRows.length<=3){alert('Need at least 3 points.');return;}activeCurveRows.splice(i,1);renderCurveTable();}
-function saveCurve(){
+async function saveCurve(){
   const rows=[];
   for(let i=0;i<activeCurveRows.length;i++){
     const score=parseFloat(document.getElementById('cr-sc-'+i).value);
@@ -335,8 +489,8 @@ function saveCurve(){
   }
   rows.sort((a,b)=>a.score-b.score);
   activeCurveRows=rows;
-  localStorage.setItem('pm_curve_rows',JSON.stringify(activeCurveRows));
-  localStorage.setItem('pm_curve',JSON.stringify(rows.map(r=>[r.score,r.pct])));
+  await saveToFirebase('pm_curve_rows', activeCurveRows);
+  await saveToFirebase('pm_curve', rows.map(r=>[r.score,r.pct]));
   renderCurveTable();flash('curve-saved','✓ Saved & applied to predictor');
 }
 function importCSV(){const a=document.getElementById('csv-import-area');a.style.display=a.style.display==='none'?'block':'none';}
@@ -390,7 +544,7 @@ function openModal(idx){
   document.getElementById('college-modal').style.display='flex';
 }
 function closeModal(){document.getElementById('college-modal').style.display='none';editIdx=null;}
-function saveCollege(){
+async function saveCollege(){
   const name=document.getElementById('m-name').value.trim();
   const tier=document.getElementById('m-tier').value.trim()||'Pvt';
   const co=parseFloat(document.getElementById('m-co').value);
@@ -403,13 +557,13 @@ function saveCollege(){
   if(editIdx!==null) activeColleges[editIdx]=obj;
   else activeColleges.push(obj);
   activeColleges.sort((a,b)=>b.co-a.co);
-  localStorage.setItem('pm_colleges',JSON.stringify(activeColleges));
+  await saveToFirebase('pm_colleges', activeColleges);
   closeModal();renderColleges();
 }
-function deleteCollege(i){
+async function deleteCollege(i){
   if(!confirm(`Remove "${activeColleges[i].name}"?`))return;
   activeColleges.splice(i,1);
-  localStorage.setItem('pm_colleges',JSON.stringify(activeColleges));
+  await saveToFirebase('pm_colleges', activeColleges);
   renderColleges();
 }
 
@@ -441,21 +595,21 @@ function renderSettings(){
       <div class="field"><div class="flabel" style="font-size:10px">Description on form</div><input class="dm-input" id="sm-note-${s}" value="${activeSlotMeta[s].note}" style="font-size:12px"></div>
     </div>`).join('');
 }
-function saveCatRelax(){
+async function saveCatRelax(){
   ['GEN','OBC','SC','ST','PWD'].forEach(c=>{const v=parseFloat(document.getElementById('cr-'+c).value);activeCatRelax[c]=isNaN(v)?0:Math.min(0,v);});
-  localStorage.setItem('pm_catrelax',JSON.stringify(activeCatRelax));flash('relax-saved','✓ Saved');
+  await saveToFirebase('pm_catrelax', activeCatRelax);flash('relax-saved','✓ Saved');
 }
-function saveSlotOffsets(){
+async function saveSlotOffsets(){
   const v={};
   ['S1','S2','S3'].forEach(s=>{v[s]=Math.max(0,parseFloat(document.getElementById('so-'+s).value)||0);});
-  activeSlotOffsets=v;localStorage.setItem('pm_slotoffsets',JSON.stringify(v));flash('offset-saved','✓ Saved');
+  activeSlotOffsets=v;await saveToFirebase('pm_slotoffsets', v);flash('offset-saved','✓ Saved');
 }
-function saveSlotMeta(){
+async function saveSlotMeta(){
   ['S1','S2','S3'].forEach(s=>{
     activeSlotMeta[s].diff=document.getElementById('sm-diff-'+s).value.trim()||activeSlotMeta[s].diff;
     activeSlotMeta[s].note=document.getElementById('sm-note-'+s).value.trim()||activeSlotMeta[s].note;
   });
-  localStorage.setItem('pm_slotmeta',JSON.stringify(activeSlotMeta));flash('slot-saved','✓ Saved');
+  await saveToFirebase('pm_slotmeta', activeSlotMeta);flash('slot-saved','✓ Saved');
 }
 
 // ── MASTER DIST ──
@@ -480,18 +634,18 @@ function renderMasterPanel(){
 }
 function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,Math.min(100,last[1]+.5)]);renderMasterPanel();}
 function delMasterRow(i){const d=activeMaster[masterSec];if(d.length<=4){alert('Need at least 4 points.');return;}d.splice(i,1);renderMasterPanel();}
-function saveMasterDist(){
+async function saveMasterDist(){
   const d=activeMaster[masterSec],rows=[];
   for(let i=0;i<d.length;i++){
     const s=parseFloat(document.getElementById('ms-'+i).value);const p=parseFloat(document.getElementById('mp-'+i).value);
     if(isNaN(s)||isNaN(p)){alert('All values must be numbers.');return;}rows.push([s,p]);
   }
   rows.sort((a,b)=>a[0]-b[0]);activeMaster[masterSec]=rows;
-  localStorage.setItem('pm_master',JSON.stringify(activeMaster));renderMasterPanel();flash('master-saved','✓ Saved & applied');
+  await saveToFirebase('pm_master', activeMaster);renderMasterPanel();flash('master-saved','✓ Saved & applied');
 }
 
 // ── RESET ──
-function resetAllData(){
+async function resetAllData(){
   if(!confirm('Reset ALL data to factory defaults? Cannot be undone.'))return;
   ['pm_curve','pm_curve_rows','pm_colleges','pm_slotmeta','pm_catrelax','pm_slotdist','pm_master','pm_slotoffsets'].forEach(k=>localStorage.removeItem(k));
   activeCurveRows=DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
@@ -500,8 +654,18 @@ function resetAllData(){
   activeCatRelax={...DEFAULT_CATCO};
   activeMaster=JSON.parse(JSON.stringify(DEFAULT_MASTER));
   activeSlotOffsets={S1:0,S2:4,S3:2};
+  // Write defaults to Firebase
+  if(fbIdToken){
+    await saveToFirebase('pm_curve_rows', activeCurveRows);
+    await saveToFirebase('pm_curve', DEFAULT_CURVE.map(p=>[...p]));
+    await saveToFirebase('pm_colleges', activeColleges);
+    await saveToFirebase('pm_slotmeta', activeSlotMeta);
+    await saveToFirebase('pm_catrelax', activeCatRelax);
+    await saveToFirebase('pm_master', activeMaster);
+    await saveToFirebase('pm_slotoffsets', activeSlotOffsets);
+  }
   renderCurveTable();renderColleges();renderSettings();
-  alert('All data reset to factory defaults.');
+  alert('All data reset to factory defaults and saved to database.');
 }
 
 function flash(id,msg){const el=document.getElementById(id);el.textContent=msg;setTimeout(()=>el.textContent='',2500);}
@@ -510,5 +674,6 @@ function flash(id,msg){const el=document.getElementById(id);el.textContent=msg;s
 renderCurveTable();
 renderColleges();
 </script>
+</div><!-- /app -->
 </body>
 </html>
