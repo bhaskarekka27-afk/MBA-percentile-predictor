@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Manager — PredictPro Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#e5e7eb;--white:#fff;--s2:#f9fafb;--s3:#f3f4f6;
+  --border:#d1d5db;--border2:#e5e7eb;
+  --accent:#4f46e5;--accent2:#4338ca;--accentl:#ede9fe;--accentb:#c4b5fd;
+  --td:#111827;--tm:#374151;--tmu:#6b7280;--tl:#9ca3af;
+  --ok:#059669;--okbg:#d1fae5;--okbdr:#6ee7b7;
+  --bad:#dc2626;--badbg:#fee2e2;--badbdr:#fca5a5;
+  --infobg:#dbeafe;--infobdr:#93c5fd;--infotxt:#1e40af;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-height:100vh;padding:0 0 4rem}
+
+/* ADMIN HEADER — minimal, no main nav */
+.admin-header{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.admin-title-wrap{display:flex;align-items:center;gap:10px}
+.admin-badge{width:32px;height:32px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-size:14px}
+.admin-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--td)}
+.admin-sub{font-size:11.5px;color:var(--tmu);margin-top:1px}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-reset{padding:7px 13px;background:var(--white);border:1.5px solid var(--badbdr);border-radius:7px;font-family:inherit;font-size:12px;font-weight:600;color:var(--bad);cursor:pointer}
+.btn-reset:hover{background:var(--badbg)}
+.btn-back{padding:7px 13px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.btn-back:hover{background:var(--accent2)}
+
+/* TABS */
+.tabs-wrap{padding:1.2rem 1.5rem 0;max-width:920px;margin:0 auto}
+.tabs{display:flex;gap:2px;background:var(--s3);border-radius:10px;padding:4px;width:fit-content}
+.dmtab{padding:8px 18px;background:none;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;color:var(--tmu);cursor:pointer;transition:all .14s}
+.dmtab:hover{color:var(--td)}
+.dmtab.on{background:var(--white);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* CONTENT */
+.content{max-width:920px;margin:0 auto;padding:1.2rem 1.5rem}
+.panel{display:none}.panel.active{display:flex;flex-direction:column;gap:1.1rem}
+
+/* CARDS */
+.dm-card{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:1.3rem;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.dm-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.dm-card-title{font-size:14.5px;font-weight:700;color:var(--td);margin-bottom:.2rem}
+.dm-card-desc{font-size:12px;color:var(--tmu);line-height:1.55;max-width:560px}
+.dm-th{font-size:11px;font-weight:700;color:var(--tmu);text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--border);letter-spacing:.3px;white-space:nowrap}
+.dm-th-hint{font-size:9.5px;font-weight:400;color:var(--tl);margin-left:3px}
+.dm-btn-pri{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.dm-btn-pri:hover{background:var(--accent2)}
+.dm-btn-sec{padding:6px 12px;background:var(--s3);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--tm);cursor:pointer}
+.dm-btn-sec:hover{border-color:var(--accent);color:var(--accent)}
+.dm-input{padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--td);background:var(--white);outline:none;transition:border-color .14s;width:100%}
+.dm-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,70,229,.08)}
+.dm-td{padding:6px 8px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.del-btn{padding:3px 9px;background:var(--badbg);border:1px solid var(--badbdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--bad);cursor:pointer}
+.del-btn:hover{background:var(--bad);color:#fff}
+.edit-btn{padding:3px 9px;background:var(--infobg);border:1px solid var(--infobdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--infotxt);cursor:pointer;margin-right:3px}
+.edit-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.dsecbtn{padding:5px 13px;background:var(--s3);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--tmu);cursor:pointer}
+.dsecbtn:hover{border-color:var(--accent);color:var(--accent)}
+.dsecbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.save-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.saved-msg{font-size:12px;color:var(--ok);font-weight:600}
+.info-banner{background:var(--accentl);border:1.5px solid var(--accentb);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12.5px;color:var(--accent);font-weight:600;display:flex;align-items:center;gap:8px}
+.field{display:flex;flex-direction:column;gap:4px}
+.flabel{font-size:11px;font-weight:600;color:var(--tm);letter-spacing:.2px}
+
+@media(max-width:600px){
+  .admin-header{padding:.8rem 1rem}
+  .tabs-wrap{padding:.8rem 1rem 0}
+  .content{padding:1rem}
+  .dmtab{padding:7px 12px;font-size:12px}
+  .dm-card{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg)">
+  <div style="background:var(--white);border-radius:16px;padding:2rem 2.2rem;width:380px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.1);border:1.5px solid var(--border)">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="width:44px;height:44px;background:var(--accent);border-radius:10px;display:grid;place-items:center;font-size:20px;margin:0 auto .8rem">⚙</div>
+      <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--td)">Admin Login</div>
+      <div style="font-size:12.5px;color:var(--tmu);margin-top:3px">PredictPro Data Manager</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--tm);margin-bottom:5px">Email</div>
+        <input id="login-email" type="email" placeholder="admin@example.com" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--tm);margin-bottom:5px">Password</div>
+        <input id="login-password" type="password" placeholder="••••••••" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--td);background:var(--white);outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+    </div>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">Sign In</button>
+    <div id="login-err" style="font-size:12px;color:var(--bad);text-align:center;margin-top:8px;min-height:16px"></div>
+    <div style="font-size:11px;color:var(--tl);text-align:center;margin-top:12px">Create admin users in Firebase Console → Authentication</div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="app" style="display:none">
+
+<!-- ADMIN HEADER -->
+<div class="admin-header">
+  <div class="admin-title-wrap">
+    <div class="admin-badge">⚙</div>
+    <div>
+      <div class="admin-title">Data Manager</div>
+      <div class="admin-sub">PredictPro · Changes saved to Firebase DB + browser cache</div>
+    </div>
+  </div>
+  <div class="admin-actions">
+    <div id="admin-user-wrap" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--tmu)">
+      <span>👤</span><span id="admin-user"></span>
+      <button onclick="doLogout()" style="padding:4px 10px;background:var(--s3);border:1.5px solid var(--border);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--tm);cursor:pointer">Logout</button>
+    </div>
+    <button class="btn-reset" onclick="resetAllData()">↺ Reset All</button>
+    <a class="btn-back" href="mba_predictor_final.html">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Predictor
+    </a>
+  </div>
+</div>
+
+<!-- DB status bar -->
+<div id="db-load-status" style="display:none;font-size:12px;font-weight:500;padding:6px 1.5rem;border-bottom:1px solid var(--border);background:var(--s2)"></div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="dmtab on" id="dtab-curve"       onclick="switchTab('curve',this)">📈 Score vs Percentile</button>
+    <button class="dmtab"    id="dtab-colleges"    onclick="switchTab('colleges',this)">🏛 Colleges</button>
+    <button class="dmtab"    id="dtab-settings"    onclick="switchTab('settings',this)">⚙ Settings</button>
+    <button class="dmtab"    id="dtab-submissions" onclick="switchTab('submissions',this)">👥 Submissions</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ═══ TAB 1: CURVE ═══ -->
+  <div class="panel active" id="panel-curve">
+    <div class="dm-card">
+      <div class="dm-card-head">
+        <div>
+          <div class="dm-card-title">Score → Percentile Data</div>
+          <div class="dm-card-desc">Maps a <strong>normalized score</strong> to a <strong>percentile</strong>. Add one row per data point. Sort order doesn't matter — handled automatically on save.</div>
+        </div>
+        <div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap">
+          <button class="dm-btn-sec" onclick="importCSV()">⬆ Import CSV</button>
+          <button class="dm-btn-sec" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="dm-btn-pri" onclick="addCurveRow()">+ Add Row</button>
+        </div>
+      </div>
+      <div class="info-banner">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/><path d="M8 5v4l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span id="active-curve-text">Loading...</span>
+      </div>
+      <!-- CSV import area -->
+      <div id="csv-import-area" style="display:none;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;padding:12px;margin-bottom:12px">
+        <div style="font-size:12.5px;font-weight:600;color:var(--td);margin-bottom:6px">Paste CSV — one row per line: <code style="background:var(--white);padding:1px 6px;border-radius:4px;font-size:11.5px">Score, Percentile</code></div>
+        <textarea id="csv-input" style="width:100%;height:80px;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none;color:var(--td)" placeholder="87, 99&#10;67, 95&#10;53, 90&#10;43, 85"></textarea>
+        <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
+          <button class="dm-btn-pri" style="font-size:12px;padding:6px 14px" onclick="processCSV()">Import (Append)</button>
+          <button style="padding:6px 14px;background:var(--badbg);border:1.5px solid var(--badbdr);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--bad);cursor:pointer" onclick="processCSV(true)">Replace All</button>
+          <button class="dm-btn-sec" style="font-size:12px;padding:6px 12px" onclick="document.getElementById('csv-import-area').style.display='none'">Cancel</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:300px">
+          <thead><tr style="background:var(--s2)">
+            <th class="dm-th" style="width:45%">Normalized Score <span class="dm-th-hint">Post-slot adjustment</span></th>
+            <th class="dm-th" style="width:45%">Percentile <span class="dm-th-hint">0 – 100</span></th>
+            <th class="dm-th" style="width:10%"></th>
+          </tr></thead>
+          <tbody id="curve-tbody"></tbody>
+        </table>
+      </div>
+      <div class="save-row">
+        <button class="dm-btn-pri" onclick="saveCurve()">✓ Save & Apply Curve</button>
+        <span class="saved-msg" id="curve-saved"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 2: COLLEGES ═══ -->
+  <div class="panel" id="panel-colleges">
+    <div class="dm-card" style="padding:0;overflow:hidden">
+      <div class="dm-card-head" style="padding:1rem 1.2rem">
+        <div>
+          <div class="dm-card-title">College Cut-offs &amp; Placements</div>
+          <div class="dm-card-desc">Set the minimum percentile required per college and placement data. Used for Reach / Match / Safety classification.</div>
+        </div>
+        <button class="dm-btn-pri" onclick="openModal(null)" style="flex-shrink:0">+ Add College</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:520px" id="college-tbl">
+          <thead><tr style="background:var(--s2)">
+            <th class="dm-th" style="padding-left:1.2rem">College</th>
+            <th class="dm-th">Tier</th>
+            <th class="dm-th">Cut-off <span class="dm-th-hint">General %ile</span></th>
+            <th class="dm-th">Avg Pkg <span class="dm-th-hint">₹L</span></th>
+            <th class="dm-th">Max Pkg <span class="dm-th-hint">₹L</span></th>
+            <th class="dm-th"></th>
+          </tr></thead>
+          <tbody id="college-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 3: SETTINGS ═══ -->
+  <div class="panel" id="panel-settings">
+
+    <!-- Category relaxation -->
+    <div class="dm-card">
+      <div class="dm-card-title" style="margin-bottom:.25rem">Category Cut-off Relaxation</div>
+      <div class="dm-card-desc" style="margin-bottom:1rem">How many percentile points to <strong>subtract from a college's cut-off</strong> for each category. Makes more colleges accessible for reserved categories. Keep General at 0. Enter negative numbers.</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px" id="cat-relax-fields"></div>
+      <div class="save-row">
+        <button class="dm-btn-pri" onclick="saveCatRelax()">✓ Save Relaxation</button>
+        <span class="saved-msg" id="relax-saved"></span>
+      </div>
+    </div>
+
+    <!-- Slot offsets -->
+    <div class="dm-card">
+      <div class="dm-card-title" style="margin-bottom:.25rem">Slot Difficulty Offsets</div>
+      <div class="dm-card-desc" style="margin-bottom:1rem">How many points to <strong>add</strong> to scores from each slot to compensate for difficulty differences. Slot 1 (easiest) = 0. Slot 2 (hardest) = larger number like 4.</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="slot-offset-fields"></div>
+      <div style="margin-top:8px;padding:8px 10px;background:var(--s2);border-radius:7px;font-size:11.5px;color:var(--tmu)">
+        💡 Example: Slot 2 offset = 4 means a raw score of 80 in Slot 2 is treated as 84 for percentile calculation.
+      </div>
+      <div class="save-row">
+        <button class="dm-btn-pri" onclick="saveSlotOffsets()">✓ Save Offsets</button>
+        <span class="saved-msg" id="offset-saved"></span>
+      </div>
+    </div>
+
+    <!-- Slot labels -->
+    <div class="dm-card">
+      <div class="dm-card-title" style="margin-bottom:.25rem">Slot Labels</div>
+      <div class="dm-card-desc" style="margin-bottom:1rem">Labels shown to students on the predictor form. No effect on calculation.</div>
+      <div style="display:flex;flex-direction:column;gap:10px" id="slot-meta-fields"></div>
+      <div class="save-row">
+        <button class="dm-btn-pri" onclick="saveSlotMeta()">✓ Save Labels</button>
+        <span class="saved-msg" id="slot-saved"></span>
+      </div>
+    </div>
+
+    <!-- Advanced: master distributions -->
+    <div class="dm-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleAdv()">
+        <div>
+          <div class="dm-card-title" style="margin-bottom:.2rem">Advanced: Section Score Distributions</div>
+          <div class="dm-card-desc">Master normalization tables (VARC, LRDI, QA). Edit only if you have precise section-level data.</div>
+        </div>
+        <span id="adv-icon" style="font-size:18px;color:var(--tmu);flex-shrink:0;margin-left:12px">▸</span>
+      </div>
+      <div id="adv-panel" style="display:none;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--border)">
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button class="dsecbtn on" id="mbtn-varc" onclick="switchMasterSec('varc',this)">VARC</button>
+          <button class="dsecbtn" id="mbtn-lrdi" onclick="switchMasterSec('lrdi',this)">LRDI</button>
+          <button class="dsecbtn" id="mbtn-qa"   onclick="switchMasterSec('qa',this)">QA</button>
+        </div>
+        <div style="font-size:11.5px;color:var(--tmu);margin-bottom:8px">Each row: <code style="background:var(--s3);padding:1px 5px;border-radius:4px">Section Score → Intra-section Percentile</code></div>
+        <div id="master-panel"></div>
+        <div class="save-row">
+          <button class="dm-btn-pri" onclick="saveMasterDist()">✓ Save Distribution</button>
+          <span class="saved-msg" id="master-saved"></span>
+        </div>
+      </div>
+    </div>
+
+  <!-- ═══ TAB 4: SUBMISSIONS ═══ -->
+  <div class="panel" id="panel-submissions" style="display:none">
+
+    <!-- Stats bar -->
+    <div id="sub-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px"></div>
+
+    <!-- Filters -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid var(--border);padding:1.3rem;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:14px;font-weight:700;color:var(--td)">Filters</div>
+        <div style="display:flex;gap:8px">
+          <button class="dm-btn-sec" onclick="clearSubFilters()" style="font-size:12px;padding:6px 12px">✕ Clear</button>
+          <button class="dm-btn-pri" onclick="loadSubmissions()" style="font-size:12px;padding:6px 14px">↺ Refresh Data</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div class="field" style="flex:1;min-width:160px">
+          <div class="flabel">Search name / mobile</div>
+          <input class="dm-input" id="sub-search" placeholder="Type to filter..." oninput="filterSubs()">
+        </div>
+        <div class="field">
+          <div class="flabel">Category</div>
+          <select class="dm-input" id="sub-cat" onchange="filterSubs()" style="cursor:pointer">
+            <option value="">All</option>
+            <option>GEN</option><option>OBC</option><option>SC</option><option>ST</option><option>PWD</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flabel">Slot</div>
+          <select class="dm-input" id="sub-slot" onchange="filterSubs()" style="cursor:pointer">
+            <option value="">All</option>
+            <option value="S1">Slot 1</option><option value="S2">Slot 2</option><option value="S3">Slot 3</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="flabel">Min %ile</div>
+          <input class="dm-input" id="sub-pct-min" type="number" min="0" max="100" placeholder="0" style="width:75px" oninput="filterSubs()">
+        </div>
+        <div class="field">
+          <div class="flabel">Max %ile</div>
+          <input class="dm-input" id="sub-pct-max" type="number" min="0" max="100" placeholder="100" style="width:75px" oninput="filterSubs()">
+        </div>
+        <button class="dm-btn-sec" onclick="exportSubCSV()" style="align-self:flex-end;font-size:12px">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid var(--border)">
+      <div id="sub-loading" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">Click Refresh Data to load submissions</div>
+      <div id="sub-table-wrap" style="display:none;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:800px">
+          <thead>
+            <tr style="background:#f9fafb">
+              <th class="dm-th">#</th>
+              <th class="dm-th">Name</th>
+              <th class="dm-th">Mobile</th>
+              <th class="dm-th">Category</th>
+              <th class="dm-th">Slot</th>
+              <th class="dm-th">VARC</th>
+              <th class="dm-th">LRDI</th>
+              <th class="dm-th">QA</th>
+              <th class="dm-th">Raw</th>
+              <th class="dm-th">Norm</th>
+              <th class="dm-th">Percentile</th>
+              <th class="dm-th">Tier</th>
+              <th class="dm-th">Date</th>
+            </tr>
+          </thead>
+          <tbody id="sub-tbody"></tbody>
+        </table>
+        <div id="sub-count" style="padding:.6rem 1rem;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /content -->
+
+<!-- MODAL — add/edit college -->
+<div id="college-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#fff;border-radius:14px;padding:1.6rem;width:460px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--td);margin-bottom:1rem" id="modal-title">Add College</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="field" style="grid-column:1/-1"><div class="flabel">College Name *</div><input class="dm-input" id="m-name" placeholder="e.g. IIM Ahmedabad"></div>
+      <div class="field"><div class="flabel">Tier</div><input class="dm-input" id="m-tier" placeholder="e.g. IIM-ABC"></div>
+      <div class="field"><div class="flabel">Cut-off Percentile (GEN) *</div><input class="dm-input" id="m-co" type="number" min="50" max="100" step="0.5" placeholder="99.0"></div>
+      <div class="field"><div class="flabel">Avg Package (₹L) *</div><input class="dm-input" id="m-avg" type="number" min="1" max="200" step="0.1" placeholder="34.5"></div>
+      <div class="field"><div class="flabel">Max Package (₹L)</div><input class="dm-input" id="m-max" type="number" min="1" max="500" placeholder="78"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="closeModal()" style="padding:8px 18px;background:var(--s3);border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--tm);cursor:pointer">Cancel</button>
+      <button onclick="saveCollege()" class="dm-btn-pri">Save College</button>
+    </div>
+    <div style="font-size:11.5px;color:var(--bad);margin-top:7px;min-height:14px" id="modal-err"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════
+//  SUPABASE CONFIG — fill in from:
+//  supabase.com → Project → Settings → API
+// ════════════════════════════════════════════════════
+const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';   // e.g. https://xyzabc.supabase.co
+const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';      // long string starting with eyJ...
+// ════════════════════════════════════════════════════
+
+// Supabase Auth endpoint
+const SB_SIGNIN = `${SB_URL}/auth/v1/token?grant_type=password`;
+
+let sbAccessToken = null;  // set after login or restored from session
+
+// ── AUTH ─────────────────────────────────────────────
+async function doLogin(){
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-err');
+  const btnEl    = document.getElementById('login-btn');
+  if(!email||!password){errEl.textContent='Enter email and password.';return;}
+  btnEl.textContent='Signing in...';btnEl.disabled=true;errEl.textContent='';
+  try{
+    const res = await fetch(SB_SIGNIN,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON_KEY},
+      body:JSON.stringify({email,password})
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){
+      errEl.textContent = data.error_description || data.msg || 'Invalid credentials';
+      btnEl.textContent='Sign In'; btnEl.disabled=false; return;
+    }
+    sbAccessToken = data.access_token;
+    // ── Persist session so page refresh doesn't log out ──
+    sessionStorage.setItem('sb_token', data.access_token);
+    sessionStorage.setItem('sb_refresh', data.refresh_token);
+    sessionStorage.setItem('sb_email', email);
+    showApp(email);
+    await loadFromSupabase();
+  } catch(e){
+    errEl.textContent='Network error. Check your connection.';
+    btnEl.textContent='Sign In'; btnEl.disabled=false;
+  }
+}
+
+function showApp(email){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('admin-user').textContent=email;
+  document.getElementById('admin-user-wrap').style.display='flex';
+}
+
+function doLogout(){
+  // Only clears session when user explicitly clicks Logout
+  sbAccessToken=null;
+  sessionStorage.removeItem('sb_token');
+  sessionStorage.removeItem('sb_refresh');
+  sessionStorage.removeItem('sb_email');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-password').value='';
+}
+
+// ── RESTORE SESSION ON PAGE LOAD ─────────────────────
+async function restoreSession(){
+  const token   = sessionStorage.getItem('sb_token');
+  const refresh = sessionStorage.getItem('sb_refresh');
+  const email   = sessionStorage.getItem('sb_email');
+  if(!token || !refresh) return false;
+  // Try refreshing the token (Supabase tokens expire after 1hr)
+  try{
+    const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=refresh_token`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON_KEY},
+      body:JSON.stringify({refresh_token: refresh})
+    });
+    const data = await res.json();
+    if(!res.ok || data.error){
+      // Refresh token expired — must log in again
+      sessionStorage.clear();
+      return false;
+    }
+    sbAccessToken = data.access_token;
+    sessionStorage.setItem('sb_token',   data.access_token);
+    sessionStorage.setItem('sb_refresh', data.refresh_token);
+    showApp(email);
+    await loadFromSupabase();
+    return true;
+  } catch(e){
+    console.warn('Session restore failed:', e.message);
+    return false;
+  }
+}
+
+// ── DB READ ───────────────────────────────────────────
+async function loadFromSupabase(){
+  const statusEl = document.getElementById('db-load-status');
+  statusEl.textContent='⏳ Loading from database...'; statusEl.style.display='block'; statusEl.style.color='var(--accent)';
+  try{
+    const res = await fetch(`${SB_URL}/rest/v1/config?select=key,value`,{
+      headers:{
+        'apikey': SB_ANON_KEY,
+        'Authorization': `Bearer ${sbAccessToken||SB_ANON_KEY}`
+      }
+    });
+    if(!res.ok) throw new Error(res.status);
+    const rows = await res.json();
+    if(rows && rows.length){
+      const d = {};
+      rows.forEach(r => d[r.key]=r.value);
+      if(d.pm_curve_rows)  activeCurveRows   = d.pm_curve_rows;
+      if(d.pm_colleges)    activeColleges    = d.pm_colleges;
+      if(d.pm_slotmeta)    activeSlotMeta    = d.pm_slotmeta;
+      if(d.pm_catrelax)    activeCatRelax    = d.pm_catrelax;
+      if(d.pm_master)      activeMaster      = d.pm_master;
+      if(d.pm_slotoffsets) activeSlotOffsets = d.pm_slotoffsets;
+      rows.forEach(r => localStorage.setItem(r.key, JSON.stringify(r.value)));
+    }
+    statusEl.textContent='✅ Database loaded successfully'; statusEl.style.color='var(--ok)';
+    setTimeout(()=>statusEl.style.display='none', 2500);
+    renderCurveTable(); renderColleges();
+  } catch(e){
+    statusEl.textContent='⚠ Could not load from DB — showing local cache'; statusEl.style.color='var(--warn)';
+    console.warn(e);
+  }
+}
+
+// ── DB WRITE ──────────────────────────────────────────
+// Supabase upsert — inserts if key doesn't exist, updates if it does
+async function saveToSupabase(key, value){
+  // Always write to localStorage immediately
+  localStorage.setItem(key, JSON.stringify(value));
+  if(!sbAccessToken || !SB_URL || SB_URL==='YOUR_PROJECT_URL') return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/config`,{
+      method:'POST',
+      headers:{
+        'apikey':          SB_ANON_KEY,
+        'Authorization':   `Bearer ${sbAccessToken}`,
+        'Content-Type':    'application/json',
+        'Prefer':          'resolution=merge-duplicates'  // upsert
+      },
+      body: JSON.stringify({key, value, updated_at: new Date().toISOString()})
+    });
+  } catch(e){ console.warn('Supabase write failed for', key, e.message); }
+}
+
+// Alias so the rest of the code stays clean
+const saveToFirebase = saveToSupabase;
+
+// ── INIT ON PAGE LOAD ────────────────────────────────
+document.addEventListener('DOMContentLoaded', async ()=>{
+  document.getElementById('login-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+  // Supabase not configured → skip login, work offline
+  if(!SB_URL || SB_URL==='YOUR_PROJECT_URL'){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('db-load-status').textContent='⚠ Supabase not configured — changes saved to browser only';
+    document.getElementById('db-load-status').style.display='block';
+    document.getElementById('db-load-status').style.color='var(--warn)';
+    document.getElementById('admin-user-wrap').style.display='none';
+    return;
+  }
+
+  // Try restoring existing session (page refresh case)
+  const restored = await restoreSession();
+  if(!restored){
+    // No valid session — show login screen
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+
+// ── DEFAULT DATA ──
+const DEFAULT_CURVE=[[0,.1],[3,.5],[6,1],[8,2],[10,3.5],[11,5],[12.5,55],[16.5,60],[19,65],[21.5,70],[27.5,75],[36,80],[43,85],[53,90],[67,95],[72.5,97],[81,98],[87,99],[114.5,99.5],[118,99.9],[122,100]];
+const DEFAULT_CATCO={GEN:0,OBC:-8,SC:-18,ST:-22,PWD:-25};
+const DEFAULT_MASTER={
+  varc:[[-10,.5],[-6,1],[-2,3],[0,5],[4,10],[7,15],[9,20],[11.5,55],[12.5,60],[13.5,65],[14.5,70],[15.5,75],[17.5,80],[22,85],[25,90],[30,95],[33,97],[37.5,98],[41,99],[47,99.5],[52,99.9],[64,100]],
+  lrdi:[[-10,.5],[-5,1],[-2,3],[0,5],[2,10],[4,15],[5,20],[6.5,55],[7.5,60],[8.5,65],[9.5,70],[10.5,75],[12,80],[15,85],[17,90],[22,95],[22.5,97],[25.5,98],[29,99],[33.5,99.5],[43,99.9],[53,100]],
+  qa:  [[-10,.5],[-5,1],[-2,3],[0,5],[2,10],[3,15],[4,20],[4.5,55],[5.5,60],[6.5,65],[7.5,70],[8.5,75],[10,80],[15,85],[17,90],[20.5,97],[23,95],[23.5,98],[30,99],[31,99.5],[45,99.9],[55,100]].sort((a,b)=>a[0]-b[0]),
+};
+const DEFAULT_SLOTMETA={
+  S1:{lbl:'Slot 1 — Morning (CAT 2025)',diff:'Moderate',note:'Moderate difficulty. Minimal normalization adjustment.'},
+  S2:{lbl:'Slot 2 — Afternoon (CAT 2025)',diff:'Hard',note:'Harder slot. Your score is boosted to reflect tougher questions.'},
+  S3:{lbl:'Slot 3 — Evening (CAT 2025)',diff:'Moderate-Hard',note:'Moderate-Hard slot. Small normalization boost applied.'},
+};
+const DEFAULT_COLLEGES=[
+  {name:'IIM Ahmedabad',tier:'IIM-ABC',co:99.0,avg:36.5,max:85},{name:'IIM Bangalore',tier:'IIM-ABC',co:99.0,avg:35.2,max:68},
+  {name:'IIM Calcutta',tier:'IIM-ABC',co:98.5,avg:35.8,max:78},{name:'FMS Delhi',tier:'Central',co:98.5,avg:30.2,max:58},
+  {name:'IIM Lucknow',tier:'IIM-Next',co:97.5,avg:30.1,max:55},{name:'IIM Kozhikode',tier:'IIM-Next',co:97.0,avg:27.8,max:50},
+  {name:'IIM Indore',tier:'IIM-Next',co:97.0,avg:27.4,max:48},{name:'XLRI Jamshedpur',tier:'Top Pvt',co:95.5,avg:31.5,max:62},
+  {name:'IIM Shillong',tier:'IIM-New',co:95.0,avg:21.8,max:40},{name:'MDI Gurgaon',tier:'Top Pvt',co:95.0,avg:25.8,max:50},
+  {name:'SPJIMR Mumbai',tier:'Top Pvt',co:94.0,avg:30.2,max:58},{name:'IIM Udaipur',tier:'IIM-New',co:93.0,avg:18.5,max:32},
+  {name:'IIM Trichy',tier:'IIM-New',co:93.0,avg:17.9,max:30},{name:'IIM Raipur',tier:'IIM-New',co:92.0,avg:16.2,max:28},
+  {name:'IIM Rohtak',tier:'IIM-New',co:91.0,avg:15.8,max:26},{name:'NMIMS Mumbai',tier:'Top Pvt',co:91.0,avg:24.0,max:46},
+  {name:'IIM Kashipur',tier:'IIM-New',co:90.0,avg:15.0,max:25},{name:'XIMB Bhubaneswar',tier:'Pvt',co:88.0,avg:18.4,max:35},
+  {name:'Xavier Bhubaneswar',tier:'Pvt',co:87.0,avg:17.5,max:32},{name:'IMT Ghaziabad',tier:'Pvt',co:85.0,avg:15.0,max:30},
+  {name:'Fore School Delhi',tier:'Pvt',co:85.0,avg:13.2,max:24},{name:'Great Lakes Chennai',tier:'Pvt',co:83.0,avg:14.2,max:26},
+  {name:'LBSIM Delhi',tier:'Pvt',co:82.0,avg:11.8,max:21},{name:'Symbiosis Pune',tier:'Pvt',co:80.0,avg:12.2,max:24},
+  {name:'TAPMI Manipal',tier:'Pvt',co:80.0,avg:11.8,max:22},{name:'BIMTECH Gr. Noida',tier:'Pvt',co:75.0,avg:10.2,max:20},
+];
+
+// ── LIVE STATE ──
+let activeCurveRows   = JSON.parse(localStorage.getItem('pm_curve_rows'))  || DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
+let activeColleges    = JSON.parse(localStorage.getItem('pm_colleges'))    || DEFAULT_COLLEGES.map(c=>({...c}));
+let activeSlotMeta    = JSON.parse(localStorage.getItem('pm_slotmeta'))    || JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
+let activeCatRelax    = JSON.parse(localStorage.getItem('pm_catrelax'))    || {...DEFAULT_CATCO};
+let activeMaster      = JSON.parse(localStorage.getItem('pm_master'))      || JSON.parse(JSON.stringify(DEFAULT_MASTER));
+let activeSlotOffsets = JSON.parse(localStorage.getItem('pm_slotoffsets')) || {S1:0,S2:4,S3:2};
+
+// ── TABS ──
+function switchTab(tab, btn){
+  document.querySelectorAll('.dmtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  // Hide all panels
+  ['curve','colleges','settings'].forEach(t=>{
+    const el = document.getElementById('panel-'+t);
+    if(el) el.classList.remove('active');
+  });
+  document.getElementById('panel-submissions').style.display = 'none';
+  // Show selected panel
+  if(tab === 'submissions'){
+    document.getElementById('panel-submissions').style.display = 'block';
+    loadSubmissions();
+  } else {
+    document.getElementById('panel-'+tab).classList.add('active');
+    if(tab==='settings') renderSettings();
+  }
+}
+
+// ── CURVE ──
+function renderCurveTable(){
+  document.getElementById('active-curve-text').textContent=`${activeCurveRows.length} data points loaded · sorted by score on save`;
+  document.getElementById('curve-tbody').innerHTML=activeCurveRows.map((r,i)=>`
+    <tr style="border-bottom:1px solid var(--border2)">
+      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-sc-${i}" type="number" value="${r.score}" min="-30" max="228" step="0.5"></td>
+      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-pc-${i}" type="number" value="${r.pct}" min="0" max="100" step="0.1"></td>
+      <td style="padding:5px 8px"><button class="del-btn" onclick="deleteCurveRow(${i})">✕</button></td>
+    </tr>`).join('');
+}
+function addCurveRow(){activeCurveRows.push({score:0,pct:0});renderCurveTable();}
+function deleteCurveRow(i){if(activeCurveRows.length<=3){alert('Need at least 3 points.');return;}activeCurveRows.splice(i,1);renderCurveTable();}
+async function saveCurve(){
+  const rows=[];
+  for(let i=0;i<activeCurveRows.length;i++){
+    const score=parseFloat(document.getElementById('cr-sc-'+i).value);
+    const pct=parseFloat(document.getElementById('cr-pc-'+i).value);
+    if(isNaN(score)||isNaN(pct)){alert(`Row ${i+1}: values must be numbers.`);return;}
+    if(pct<0||pct>100){alert(`Row ${i+1}: percentile must be 0–100.`);return;}
+    rows.push({score,pct});
+  }
+  rows.sort((a,b)=>a.score-b.score);
+  activeCurveRows=rows;
+  await saveToFirebase('pm_curve_rows', activeCurveRows);
+  await saveToFirebase('pm_curve', rows.map(r=>[r.score,r.pct]));
+  renderCurveTable();flash('curve-saved','✓ Saved & applied to predictor');
+}
+function importCSV(){const a=document.getElementById('csv-import-area');a.style.display=a.style.display==='none'?'block':'none';}
+function processCSV(replace=false){
+  const raw=document.getElementById('csv-input').value.trim();
+  if(!raw){alert('No data pasted.');return;}
+  const newRows=[];
+  raw.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#')).forEach(line=>{
+    const p=line.split(',').map(x=>x.trim());
+    let score,pct;
+    if(p.length>=3){score=parseFloat(p[1]);pct=parseFloat(p[2]);}
+    else if(p.length===2){score=parseFloat(p[0]);pct=parseFloat(p[1]);}
+    else return;
+    if(!isNaN(score)&&!isNaN(pct)) newRows.push({score,pct});
+  });
+  if(!newRows.length){alert('No valid rows. Format: Score, Percentile');return;}
+  activeCurveRows=replace?newRows:[...activeCurveRows,...newRows];
+  activeCurveRows.sort((a,b)=>a.score-b.score);
+  document.getElementById('csv-import-area').style.display='none';
+  document.getElementById('csv-input').value='';
+  renderCurveTable();
+  alert(`${newRows.length} rows ${replace?'imported (replaced)':'added'}. Click Save & Apply Curve to activate.`);
+}
+function exportCSV(){
+  const blob=new Blob(['Score,Percentile\n'+activeCurveRows.map(r=>`${r.score},${r.pct}`).join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cat_percentile_curve.csv';a.click();
+}
+
+// ── COLLEGES ──
+function renderColleges(){
+  document.getElementById('college-tbody').innerHTML=activeColleges.map((c,i)=>`
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;color:var(--td)">${c.name}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12px;color:var(--tmu)">${c.tier}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:${c.co>=97?'#dc2626':c.co>=90?'#d97706':'#059669'}">${c.co}th</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12.5px;color:#059669;font-weight:600">₹${c.avg}L</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12.5px;color:var(--tm)">₹${c.max}L</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border2)">
+        <button class="edit-btn" onclick="openModal(${i})">Edit</button>
+        <button class="del-btn" onclick="deleteCollege(${i})">✕</button>
+      </td>
+    </tr>`).join('');
+}
+let editIdx=null;
+function openModal(idx){
+  editIdx=idx;
+  document.getElementById('modal-title').textContent=idx===null?'Add College':'Edit College';
+  const c=idx!==null?activeColleges[idx]:{name:'',tier:'',co:'',avg:'',max:''};
+  ['name','tier','co','avg','max'].forEach(k=>document.getElementById('m-'+k).value=c[k]||'');
+  document.getElementById('modal-err').textContent='';
+  document.getElementById('college-modal').style.display='flex';
+}
+function closeModal(){document.getElementById('college-modal').style.display='none';editIdx=null;}
+async function saveCollege(){
+  const name=document.getElementById('m-name').value.trim();
+  const tier=document.getElementById('m-tier').value.trim()||'Pvt';
+  const co=parseFloat(document.getElementById('m-co').value);
+  const avg=parseFloat(document.getElementById('m-avg').value);
+  const max=parseFloat(document.getElementById('m-max').value)||avg+10;
+  if(!name){document.getElementById('modal-err').textContent='College name required.';return;}
+  if(isNaN(co)||co<50||co>100){document.getElementById('modal-err').textContent='Cut-off must be 50–100.';return;}
+  if(isNaN(avg)||avg<1){document.getElementById('modal-err').textContent='Avg package must be ≥ 1.';return;}
+  const obj={name,tier,co,avg,max};
+  if(editIdx!==null) activeColleges[editIdx]=obj;
+  else activeColleges.push(obj);
+  activeColleges.sort((a,b)=>b.co-a.co);
+  await saveToFirebase('pm_colleges', activeColleges);
+  closeModal();renderColleges();
+}
+async function deleteCollege(i){
+  if(!confirm(`Remove "${activeColleges[i].name}"?`))return;
+  activeColleges.splice(i,1);
+  await saveToFirebase('pm_colleges', activeColleges);
+  renderColleges();
+}
+
+// ── SETTINGS ──
+function renderSettings(){
+  // 1. Category relaxation
+  const cats=[{id:'GEN',label:'General / EWS',hint:'No reduction'},{id:'OBC',label:'OBC-NCL',hint:'Negative number'},{id:'SC',label:'SC',hint:'Negative number'},{id:'ST',label:'ST',hint:'Negative number'},{id:'PWD',label:'PwD',hint:'Negative number'}];
+  document.getElementById('cat-relax-fields').innerHTML=cats.map(c=>`
+    <div class="field">
+      <div class="flabel" style="font-size:11px">${c.label}</div>
+      <input class="dm-input" id="cr-${c.id}" type="number" value="${activeCatRelax[c.id]||0}" min="-50" max="0" step="1" style="font-size:15px;font-weight:700;text-align:center;padding:9px">
+      <div style="font-size:10px;color:var(--tl);text-align:center;margin-top:2px">${c.hint}</div>
+    </div>`).join('');
+  // 2. Slot offsets
+  const slots=[{id:'S1',label:'Slot 1 — Morning',color:'#4f46e5',hint:'Moderate'},{id:'S2',label:'Slot 2 — Afternoon',color:'#d97706',hint:'Hardest'},{id:'S3',label:'Slot 3 — Evening',color:'#059669',hint:'Moderate-Hard'}];
+  document.getElementById('slot-offset-fields').innerHTML=slots.map(s=>`
+    <div style="background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--td);margin-bottom:2px">${s.label}</div>
+      <div style="font-size:11px;color:${s.color};font-weight:600;margin-bottom:8px">${s.hint}</div>
+      <div class="flabel" style="font-size:10.5px;margin-bottom:4px">Score boost (points)</div>
+      <input class="dm-input" id="so-${s.id}" type="number" value="${activeSlotOffsets[s.id]||0}" min="0" max="20" step="0.5" style="font-size:20px;font-weight:700;text-align:center;padding:8px">
+    </div>`).join('');
+  // 3. Slot labels
+  const sl={S1:'Slot 1 — Morning',S2:'Slot 2 — Afternoon',S3:'Slot 3 — Evening'};
+  document.getElementById('slot-meta-fields').innerHTML=['S1','S2','S3'].map(s=>`
+    <div style="display:grid;grid-template-columns:110px 1fr 2fr;gap:8px;align-items:center;background:var(--s2);border-radius:8px;padding:9px 10px">
+      <div style="font-size:12.5px;font-weight:700;color:var(--td)">${sl[s]}</div>
+      <div class="field"><div class="flabel" style="font-size:10px">Difficulty Tag</div><input class="dm-input" id="sm-diff-${s}" value="${activeSlotMeta[s].diff}" style="font-size:12.5px"></div>
+      <div class="field"><div class="flabel" style="font-size:10px">Description on form</div><input class="dm-input" id="sm-note-${s}" value="${activeSlotMeta[s].note}" style="font-size:12px"></div>
+    </div>`).join('');
+}
+async function saveCatRelax(){
+  ['GEN','OBC','SC','ST','PWD'].forEach(c=>{const v=parseFloat(document.getElementById('cr-'+c).value);activeCatRelax[c]=isNaN(v)?0:Math.min(0,v);});
+  await saveToFirebase('pm_catrelax', activeCatRelax);flash('relax-saved','✓ Saved');
+}
+async function saveSlotOffsets(){
+  const v={};
+  ['S1','S2','S3'].forEach(s=>{v[s]=Math.max(0,parseFloat(document.getElementById('so-'+s).value)||0);});
+  activeSlotOffsets=v;await saveToFirebase('pm_slotoffsets', v);flash('offset-saved','✓ Saved');
+}
+async function saveSlotMeta(){
+  ['S1','S2','S3'].forEach(s=>{
+    activeSlotMeta[s].diff=document.getElementById('sm-diff-'+s).value.trim()||activeSlotMeta[s].diff;
+    activeSlotMeta[s].note=document.getElementById('sm-note-'+s).value.trim()||activeSlotMeta[s].note;
+  });
+  await saveToFirebase('pm_slotmeta', activeSlotMeta);flash('slot-saved','✓ Saved');
+}
+
+// ── MASTER DIST ──
+let masterSec='varc';
+function toggleAdv(){const p=document.getElementById('adv-panel'),ic=document.getElementById('adv-icon'),open=p.style.display==='none';p.style.display=open?'block':'none';ic.textContent=open?'▾':'▸';if(open)renderMasterPanel();}
+function switchMasterSec(sec,btn){masterSec=sec;document.querySelectorAll('[id^="mbtn-"]').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderMasterPanel();}
+function renderMasterPanel(){
+  const data=activeMaster[masterSec];
+  document.getElementById('master-panel').innerHTML=`
+    <table style="width:320px;border-collapse:collapse">
+      <thead><tr>
+        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">SCORE</th>
+        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">%ILE</th>
+        <th style="padding:5px 7px;border-bottom:1.5px solid var(--border)"><button onclick="addMasterRow()" style="padding:2px 9px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer">+</button></th>
+      </tr></thead>
+      <tbody>${data.map((p,i)=>`<tr>
+        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-${i}" type="number" value="${p[0]}" step="1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:70px" id="mp-${i}" type="number" value="${p[1]}" min="0" max="100" step="0.1"></td>
+        <td class="dm-td"><button class="del-btn" onclick="delMasterRow(${i})">✕</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,Math.min(100,last[1]+.5)]);renderMasterPanel();}
+function delMasterRow(i){const d=activeMaster[masterSec];if(d.length<=4){alert('Need at least 4 points.');return;}d.splice(i,1);renderMasterPanel();}
+async function saveMasterDist(){
+  const d=activeMaster[masterSec],rows=[];
+  for(let i=0;i<d.length;i++){
+    const s=parseFloat(document.getElementById('ms-'+i).value);const p=parseFloat(document.getElementById('mp-'+i).value);
+    if(isNaN(s)||isNaN(p)){alert('All values must be numbers.');return;}rows.push([s,p]);
+  }
+  rows.sort((a,b)=>a[0]-b[0]);activeMaster[masterSec]=rows;
+  await saveToFirebase('pm_master', activeMaster);renderMasterPanel();flash('master-saved','✓ Saved & applied');
+}
+
+// ── RESET ──
+async function resetAllData(){
+  if(!confirm('Reset ALL data to factory defaults? Cannot be undone.'))return;
+  ['pm_curve','pm_curve_rows','pm_colleges','pm_slotmeta','pm_catrelax','pm_slotdist','pm_master','pm_slotoffsets'].forEach(k=>localStorage.removeItem(k));
+  activeCurveRows=DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
+  activeColleges=DEFAULT_COLLEGES.map(c=>({...c}));
+  activeSlotMeta=JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
+  activeCatRelax={...DEFAULT_CATCO};
+  activeMaster=JSON.parse(JSON.stringify(DEFAULT_MASTER));
+  activeSlotOffsets={S1:0,S2:4,S3:2};
+  // Write defaults to Firebase
+  if(fbIdToken){
+    await saveToFirebase('pm_curve_rows', activeCurveRows);
+    await saveToFirebase('pm_curve', DEFAULT_CURVE.map(p=>[...p]));
+    await saveToFirebase('pm_colleges', activeColleges);
+    await saveToFirebase('pm_slotmeta', activeSlotMeta);
+    await saveToFirebase('pm_catrelax', activeCatRelax);
+    await saveToFirebase('pm_master', activeMaster);
+    await saveToFirebase('pm_slotoffsets', activeSlotOffsets);
+  }
+  renderCurveTable();renderColleges();renderSettings();
+  alert('All data reset to factory defaults and saved to database.');
+}
+
+// ── SUBMISSIONS ──────────────────────────────────────
+let allSubs = [];
+let filteredSubs = [];
+
+async function loadSubmissions(){
+  if(!sbAccessToken){ return; }
+  const loadEl = document.getElementById('sub-loading');
+  const tableEl = document.getElementById('sub-table-wrap');
+  if(loadEl) { loadEl.textContent='⏳ Loading submissions...'; loadEl.style.display='block'; }
+  if(tableEl) tableEl.style.display='none';
+  try{
+    const res = await fetch(
+      `${SB_URL}/rest/v1/submissions?select=*&order=created_at.desc&limit=500`,{
+        headers:{
+          'apikey':       SB_ANON_KEY,
+          'Authorization':`Bearer ${sbAccessToken}`
+        }
+      }
+    );
+    if(!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    allSubs = await res.json();
+    filteredSubs = [...allSubs];
+    console.log('Submissions loaded:', allSubs.length, 'rows', allSubs[0]);
+    try{ renderSubStats(allSubs); } catch(e){ console.error('renderSubStats error:', e); }
+    try{ renderSubTable(filteredSubs); } catch(e){ console.error('renderSubTable error:', e); }
+    if(loadEl)  loadEl.style.display='none';
+    if(tableEl) tableEl.style.display='block';
+  } catch(e){
+    if(loadEl) loadEl.textContent='⚠ Error: '+e.message;
+    console.error('loadSubmissions error:', e);
+  }
+}
+
+function renderSubStats(rows){
+  const el = document.getElementById('sub-stats');
+  if(!el) return;
+  if(!rows || !rows.length){ el.innerHTML=''; return; }
+  const validPcts = rows.map(r=>Number(r.percentile)).filter(p=>!isNaN(p) && p>0);
+  const avg    = validPcts.length ? (validPcts.reduce((a,b)=>a+b,0)/validPcts.length).toFixed(1) : '—';
+  const sorted = [...validPcts].sort((a,b)=>a-b);
+  const median = sorted.length ? sorted[Math.floor(sorted.length/2)].toFixed(1) : '—';
+  const above90 = validPcts.filter(p=>p>=90).length;
+  const stats=[
+    {label:'Total Submissions', value:rows.length,                                         color:'#4f46e5'},
+    {label:'Avg Percentile',    value:avg+'th',                                             color:'#0ea5e9'},
+    {label:'Median Percentile', value:median+'th',                                          color:'#10b981'},
+    {label:'Above 90th %ile',   value:above90+' ('+Math.round(above90/rows.length*100)+'%)',color:'#d97706'},
+  ];
+  el.innerHTML=stats.map(s=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+      <div style="font-size:20px;font-weight:800;color:${s.color};font-family:'Inter',sans-serif;letter-spacing:-.5px">${s.value}</div>
+      <div style="font-size:11.5px;color:var(--tmu);margin-top:3px;font-weight:500">${s.label}</div>
+    </div>`).join('');
+}
+
+function clearSubFilters(){
+  document.getElementById('sub-search').value='';
+  document.getElementById('sub-cat').value='';
+  document.getElementById('sub-slot').value='';
+  document.getElementById('sub-pct-min').value='';
+  document.getElementById('sub-pct-max').value='';
+  filteredSubs=[...allSubs];
+  renderSubTable(filteredSubs);
+}
+
+function filterSubs(){
+  const search = document.getElementById('sub-search').value.toLowerCase();
+  const cat    = document.getElementById('sub-cat').value;
+  const slot   = document.getElementById('sub-slot').value;
+  const pmin   = parseFloat(document.getElementById('sub-pct-min').value)||0;
+  const pmax   = parseFloat(document.getElementById('sub-pct-max').value)||100;
+  filteredSubs = allSubs.filter(r=>{
+    if(search && !r.name?.toLowerCase().includes(search) && !r.mobile?.includes(search)) return false;
+    if(cat  && r.category!==cat)  return false;
+    if(slot && r.slot!==slot)     return false;
+    if(r.percentile<pmin || r.percentile>pmax) return false;
+    return true;
+  });
+  renderSubTable(filteredSubs);
+}
+
+function renderSubTable(rows){
+  const tbody  = document.getElementById('sub-tbody');
+  const countEl = document.getElementById('sub-count');
+  if(!tbody){ console.error('sub-tbody not found in DOM'); return; }
+  if(!rows || !rows.length){
+    tbody.innerHTML=`<tr><td colspan="13" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">No submissions found.</td></tr>`;
+    if(countEl) countEl.textContent='0 results';
+    return;
+  }
+  tbody.innerHTML = rows.map((r,i)=>{
+    const d = new Date(r.created_at);
+    const date = d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+    const time = d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    const pct  = Number(r.percentile)||0;
+    const pctColor = pct>=95?'#059669':pct>=85?'#4f46e5':pct>=70?'#d97706':'#dc2626';
+    const tierShort = (r.tier||'—')
+      .replace('Top 1%','Top 1%').replace('Top 3%','Top 3%').replace('Top 5%','Top 5%')
+      .replace('Top 10%','Top 10%').replace(' — Elite Candidate','').replace(' — Exceptional','')
+      .replace(' — Strong Profile','').replace(' — Good Profile','').replace('Needs Improvement','Low');
+    return `<tr style="border-bottom:1px solid var(--border2)">
+      <td style="padding:7px 10px;font-size:12px;color:var(--tmu)">${i+1}</td>
+      <td style="padding:7px 10px;font-size:13px;font-weight:600;color:var(--td)">${r.name||'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);font-family:monospace">${r.mobile||'—'}</td>
+      <td style="padding:7px 10px"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--s3);color:var(--tm)">${r.category||'—'}</span></td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tmu)">${r.slot||'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.varc_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.lrdi_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:var(--tm);text-align:center">${r.qa_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;font-weight:600;color:var(--td);text-align:center">${r.total_raw??'—'}</td>
+      <td style="padding:7px 10px;font-size:12.5px;color:#4f46e5;text-align:center">${r.normalized_score??'—'}</td>
+      <td style="padding:7px 10px;text-align:center"><span style="font-size:13px;font-weight:800;color:${pctColor}">${pct.toFixed(1)}</span></td>
+      <td style="padding:7px 10px;font-size:11.5px;color:var(--tmu);white-space:nowrap">${tierShort}</td>
+      <td style="padding:7px 10px;font-size:11px;color:var(--tl);white-space:nowrap">${date}<br>${time}</td>
+    </tr>`;
+  }).join('');
+  if(countEl) countEl.textContent=`Showing ${rows.length} of ${allSubs.length} submissions`;
+}
+
+function exportSubCSV(){
+  if(!filteredSubs.length){alert('No data to export.');return;}
+  const headers=['Name','Mobile','Category','Gender','Slot','VARC Raw','LRDI Raw','QA Raw','Total Raw','Normalized','Percentile','Tier','Date'];
+  const rows = filteredSubs.map(r=>[
+    r.name, r.mobile, r.category, r.gender, r.slot,
+    r.varc_raw, r.lrdi_raw, r.qa_raw, r.total_raw,
+    r.normalized_score, r.percentile, r.tier,
+    new Date(r.created_at).toLocaleString('en-IN')
+  ].map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `submissions_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function flash(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;setTimeout(()=>el.textContent='',2500);}
+
+// ── INIT ──
+renderCurveTable();
+renderColleges();
+</script>
+</div><!-- /app -->
+</body>
+</html>
