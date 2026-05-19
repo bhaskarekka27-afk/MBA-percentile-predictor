@@ -143,7 +143,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       <div class="dm-card-head">
         <div>
           <div class="dm-card-title">Score Range → Percentile Data</div>
-          <div class="dm-card-desc">Maps a <strong>normalized score range</strong> to a <strong>percentile</strong>. Add one row per range point. Sort order handled automatically on save.</div>
+          <div class="dm-card-desc">Maps a <strong>normalized score range</strong> to a <strong>percentile</strong>. Add one row per range window. Sort order handled automatically on save.</div>
         </div>
         <div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap">
           <button class="dm-btn-sec" onclick="importCSV()">⬆ Import CSV</button>
@@ -157,7 +157,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
       <div id="csv-import-area" style="display:none;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;padding:12px;margin-bottom:12px">
         <div style="font-size:12.5px;font-weight:600;color:var(--td);margin-bottom:6px">Paste CSV — one row per line: <code style="background:var(--white);padding:1px 6px;border-radius:4px;font-size:11.5px">MinScore, MaxScore, Percentile</code></div>
-        <textarea id="csv-input" style="width:100%;height:80px;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none;color:var(--td)" placeholder="115, 119, 99.9&#10;85, 90, 99&#10;70, 75, 97"></textarea>
+        <textarea id="csv-input" style="width:100%;height:80px;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none;color:var(--td)" placeholder="0, 10, 0.5&#10;10, 15, 10&#10;15, 18, 60"></textarea>
         <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
           <button class="dm-btn-pri" style="font-size:12px;padding:6px 14px" onclick="processCSV()">Import (Append)</button>
           <button style="padding:6px 14px;background:var(--badbg);border:1.5px solid var(--badbdr);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--bad);cursor:pointer" onclick="processCSV(true)">Replace All</button>
@@ -167,9 +167,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;min-width:300px">
           <thead><tr style="background:var(--s2)">
-            <th class="dm-th" style="width:25%">Min Score</th>
-            <th class="dm-th" style="width:25%">Max Score</th>
-            <th class="dm-th" style="width:40%">Percentile <span class="dm-th-hint">0 – 100</span></th>
+            <th class="dm-th" style="width:30%">Min Score <span class="dm-th-hint">Post-slot</span></th>
+            <th class="dm-th" style="width:30%">Max Score <span class="dm-th-hint">Post-slot</span></th>
+            <th class="dm-th" style="width:30%">Percentile <span class="dm-th-hint">0 – 100</span></th>
             <th class="dm-th" style="width:10%"></th>
           </tr></thead>
           <tbody id="curve-tbody"></tbody>
@@ -460,7 +460,10 @@ async function loadFromSupabase(){
     if(rows && rows.length){
       const d = {};
       rows.forEach(r => d[r.key]=r.value);
-      if(d.pm_curve_rows)  activeCurveRows   = d.pm_curve_rows;
+      if(d.pm_curve_rows) {
+         // Fallback verification mapping single score primitives to accurate array maps
+         activeCurveRows = d.pm_curve_rows.map(r => r.minScore !== undefined ? r : {minScore: r.score||0, maxScore: r.score||0, pct: r.pct||0});
+      }
       if(d.pm_colleges)    activeColleges    = d.pm_colleges;
       if(d.pm_slotmeta)    activeSlotMeta    = d.pm_slotmeta;
       if(d.pm_catrelax)    activeCatRelax    = d.pm_catrelax;
@@ -518,13 +521,20 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   }
 });
 
-// ── DEFAULT DATA (Adapted to handles Ranges as [minScore, maxScore, percentile]) ──
-const DEFAULT_CURVE=[[0,2,.1],[3,5,.5],[6,7,1],[8,9,2],[10,10,3.5],[11,12,5],[12.5,16,55],[16.5,18,60],[19,21,65],[21.5,27,70],[27.5,35,75],[36,42,80],[43,52,85],[53,66,90],[67,72,95],[72.5,80,97],[81,86,98],[87,114,99],[114.5,117,99.5],[118,121,99.9],[122,228,100]];
+// ── FIXED MAP STRUCTS OVERALL SECTIONS (Mapped to match [MinScore, MaxScore, Percentile] ranges) ──
+const DEFAULT_CURVE=[
+  {minScore:0,maxScore:10,pct:0.1},{minScore:11,maxScore:14,pct:55},{minScore:15,maxScore:18,pct:60},
+  {minScore:18,maxScore:20,pct:65},{minScore:20,maxScore:23,pct:70},{minScore:25,maxScore:30,pct:75},
+  {minScore:33,maxScore:39,pct:80},{minScore:40,maxScore:45,pct:85},{minScore:53,maxScore:62,pct:90},
+  {minScore:67,maxScore:70,pct:95},{minScore:70,maxScore:75,pct:97},{minScore:78,maxScore:84,pct:98},
+  {minScore:85,maxScore:90,pct:99},{minScore:113,maxScore:116,pct:99.5},{minScore:115,maxScore:119,pct:99.9},
+  {minScore:121,maxScore:228,pct:100}
+];
 const DEFAULT_CATCO={GEN:0,OBC:-8,SC:-18,ST:-22,PWD:-25};
 const DEFAULT_MASTER={
-  varc:[[-10,-7,.5],[-6,-3,1],[-2,-1,3],[0,3,5],[4,6,10],[7,8,15],[9,11,20],[11.5,12,55],[12.5,13,60],[13.5,14,65],[14.5,15,70],[15.5,17,75],[17.5,21,80],[22,24,85],[25,29,90],[30,32,95],[33,37,97],[37.5,40,98],[41,46,99],[47,51,99.5],[52,63,99.9],[64,72,100]],
-  lrdi:[[-10,-6,.5],[-5,-3,1],[-2,-1,3],[0,1,5],[2,3,10],[4,4,15],[5,6,20],[6.5,7,55],[7.5,8,60],[8.5,9,65],[9.5,10,70],[10.5,11,75],[12,14,80],[15,16,85],[17,21,90],[22,22,95],[22.5,25,97],[25.5,28,98],[29,33,99],[33.5,42,99.5],[43,52,99.9],[53,60,100]],
-  qa:  [[-10,-6,.5],[-5,-3,1],[-2,-1,3],[0,1,5],[2,2,10],[3,3,15],[4,4,20],[4.5,5,55],[5.5,6,60],[6.5,7,65],[7.5,8,70],[8.5,9,75],[10,14,80],[15,16,85],[17,20,90],[20.5,22,97],[23,23,95],[23.5,29,98],[30,30,99],[31,44,99.5],[45,54,99.9],[55,66,100]].sort((a,b)=>a[0]-b[0]),
+  varc:[[11,12,55],[12,13,60],[13,14,65],[14,15,70],[15,16,75],[16,19,80],[19,23,85],[23,27,90],[27,31,95],[31,35,97],[35,40,98],[40,44,99],[44,50,99.5],[50,56,99.9],[56,72,100]],
+  lrdi:[[6,7,55],[7,8,60],[8,9,65],[9,10,70],[10,11,75],[11,13,80],[13,15,85],[15,18,90],[18,21,95],[21,24,97],[24,27,98],[27,31,99],[31,36,99.5],[36,46,99.9],[46,60,100]],
+  qa:[[4,5,55],[5,6,60],[6,7,65],[7,8,70],[8,9,75],[9,11,80],[11,14,85],[14,17,90],[17,19,95],[19,22,97],[22,25,98],[25,28,99],[28,34,99.5],[34,44,99.9],[44,66,100]]
 };
 const DEFAULT_SLOTMETA={
   S1:{lbl:'Slot 1 — Morning (CAT 2025)',diff:'Moderate',note:'Moderate difficulty. Minimal normalization adjustment.'},
@@ -548,7 +558,7 @@ const DEFAULT_COLLEGES=[
 ];
 
 // ── LIVE STATE ──
-let activeCurveRows   = JSON.parse(localStorage.getItem('pm_curve_rows'))  || DEFAULT_CURVE.map(p=>({minScore:p[0],maxScore:p[1],pct:p[2]}));
+let activeCurveRows   = JSON.parse(localStorage.getItem('pm_curve_rows'))?.[0]?.minScore !== undefined ? JSON.parse(localStorage.getItem('pm_curve_rows')) : DEFAULT_CURVE.map(p=>({...p}));
 let activeColleges    = JSON.parse(localStorage.getItem('pm_colleges'))    || DEFAULT_COLLEGES.map(c=>({...c}));
 let activeSlotMeta    = JSON.parse(localStorage.getItem('pm_slotmeta'))    || JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
 let activeCatRelax    = JSON.parse(localStorage.getItem('pm_catrelax'))    || {...DEFAULT_CATCO};
@@ -575,12 +585,12 @@ function switchTab(tab, btn){
 
 // ── CURVE ──
 function renderCurveTable(){
-  document.getElementById('active-curve-text').textContent=`${activeCurveRows.length} data points loaded · sorted by min score on save`;
+  document.getElementById('active-curve-text').textContent=`${activeCurveRows.length} data ranges loaded · sorted by minimum score window on save`;
   document.getElementById('curve-tbody').innerHTML=activeCurveRows.map((r,i)=>`
     <tr style="border-bottom:1px solid var(--border2)">
-      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-min-${i}" type="number" value="${r.minScore}" min="-30" max="228" step="0.5"></td>
-      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-max-${i}" type="number" value="${r.maxScore}" min="-30" max="228" step="0.5"></td>
-      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-pc-${i}" type="number" value="${r.pct}" min="0" max="100" step="0.1"></td>
+      <td style="padding:5px 8px"><input class="dm-input" style="width:110px" id="cr-min-${i}" type="number" value="${r.minScore}" min="-30" max="228" step="0.5"></td>
+      <td style="padding:5px 8px"><input class="dm-input" style="width:110px" id="cr-max-${i}" type="number" value="${r.maxScore}" min="-30" max="228" step="0.5"></td>
+      <td style="padding:5px 8px"><input class="dm-input" style="width:110px" id="cr-pc-${i}" type="number" value="${r.pct}" min="0" max="100" step="0.1"></td>
       <td style="padding:5px 8px"><button class="del-btn" onclick="deleteCurveRow(${i})">✕</button></td>
     </tr>`).join('');
 }
@@ -592,16 +602,15 @@ async function saveCurve(){
     const minScore=parseFloat(document.getElementById('cr-min-'+i).value);
     const maxScore=parseFloat(document.getElementById('cr-max-'+i).value);
     const pct=parseFloat(document.getElementById('cr-pc-'+i).value);
-    if(isNaN(minScore)||isNaN(maxScore)||isNaN(pct)){alert(`Row ${i+1}: values must be numbers.`);return;}
-    if(minScore > maxScore){alert(`Row ${i+1}: Min score cannot be greater than Max score.`);return;}
-    if(pct<0||pct>100){alert(`Row ${i+1}: percentile must be 0–100.`);return;}
+    if(isNaN(minScore)||isNaN(maxScore)||isNaN(pct)){alert(`Row ${i+1}: values must be valid numeric records.`);return;}
+    if(pct<0||pct>100){alert(`Row ${i+1}: percentile metrics must range 0–100.`);return;}
     rows.push({minScore,maxScore,pct});
   }
   rows.sort((a,b)=>a.minScore-b.minScore);
   activeCurveRows=rows;
   await saveToFirebase('pm_curve_rows', activeCurveRows);
   await saveToFirebase('pm_curve', rows.map(r=>[r.minScore,r.maxScore,r.pct]));
-  renderCurveTable();flash('curve-saved','✓ Saved & applied to predictor');
+  renderCurveTable();flash('curve-saved','✓ Saved & applied range curve successfully');
 }
 function importCSV(){const a=document.getElementById('csv-import-area');a.style.display=a.style.display==='none'?'block':'none';}
 function processCSV(replace=false){
@@ -610,18 +619,18 @@ function processCSV(replace=false){
   const newRows=[];
   raw.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#')).forEach(line=>{
     const p=line.split(',').map(x=>x.trim());
-    let minScore,maxScore,pct;
-    if(p.length===3){minScore=parseFloat(p[0]);maxScore=parseFloat(p[1]);pct=parseFloat(p[2]);}
-    else return;
-    if(!isNaN(minScore)&&!isNaN(maxScore)&&!isNaN(pct)) newRows.push({minScore,maxScore,pct});
+    if(p.length===3){
+      const minScore=parseFloat(p[0]);const maxScore=parseFloat(p[1]);const pct=parseFloat(p[2]);
+      if(!isNaN(minScore)&&!isNaN(maxScore)&&!isNaN(pct)) newRows.push({minScore,maxScore,pct});
+    }
   });
-  if(!newRows.length){alert('No valid rows. Format: MinScore, MaxScore, Percentile');return;}
+  if(!newRows.length){alert('No valid items. Correct layout format: MinScore, MaxScore, Percentile');return;}
   activeCurveRows=replace?newRows:[...activeCurveRows,...newRows];
   activeCurveRows.sort((a,b)=>a.minScore-b.minScore);
   document.getElementById('csv-import-area').style.display='none';
   document.getElementById('csv-input').value='';
   renderCurveTable();
-  alert(`${newRows.length} rows ${replace?'imported (replaced)':'added'}. Click Save & Apply Curve to activate.`);
+  alert(`${newRows.length} ranges processed. Click Save & Apply Curve to write structural updates.`);
 }
 function exportCSV(){
   const blob=new Blob(['MinScore,MaxScore,Percentile\n'+activeCurveRows.map(r=>`${r.minScore},${r.maxScore},${r.pct}`).join('\n')],{type:'text/csv'});
@@ -725,7 +734,7 @@ function switchMasterSec(sec,btn){masterSec=sec;document.querySelectorAll('[id^=
 function renderMasterPanel(){
   const data=activeMaster[masterSec];
   document.getElementById('master-panel').innerHTML=`
-    <table style="width:400px;border-collapse:collapse">
+    <table style="width:380px;border-collapse:collapse">
       <thead><tr>
         <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">MIN SCORE</th>
         <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">MAX SCORE</th>
@@ -733,34 +742,33 @@ function renderMasterPanel(){
         <th style="padding:5px 7px;border-bottom:1.5px solid var(--border)"><button onclick="addMasterRow()" style="padding:2px 9px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer">+</button></th>
       </tr></thead>
       <tbody>${data.map((p,i)=>`<tr>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-min-${i}" type="number" value="${p[0]}" step="1"></td>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-max-${i}" type="number" value="${p[1] !== undefined ? p[1] : p[0]}" step="1"></td>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="mp-${i}" type="number" value="${p[2] !== undefined ? p[2] : p[1]}" min="0" max="100" step="0.1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:75px" id="ms-min-${i}" type="number" value="${p[0]}" step="1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:75px" id="ms-max-${i}" type="number" value="${p[1]}" step="1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:75px" id="mp-${i}" type="number" value="${p[2]}" min="0" max="100" step="0.1"></td>
         <td class="dm-td"><button class="del-btn" onclick="delMasterRow(${i})">✕</button></td>
       </tr>`).join('')}</tbody>
     </table>`;
 }
-function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,last[1]+5,Math.min(100,last[2]+.5)]);renderMasterPanel();}
+function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,last[1]+5,Math.min(100,last[2]+1)]);renderMasterPanel();}
 function delMasterRow(i){const d=activeMaster[masterSec];if(d.length<=4){alert('Need at least 4 points.');return;}d.splice(i,1);renderMasterPanel();}
 async function saveMasterDist(){
   const d=activeMaster[masterSec],rows=[];
   for(let i=0;i<d.length;i++){
-    const sMin=parseFloat(document.getElementById('ms-min-'+i).value);
-    const sMax=parseFloat(document.getElementById('ms-max-'+i).value);
+    const minS=parseFloat(document.getElementById('ms-min-'+i).value);
+    const maxS=parseFloat(document.getElementById('ms-max-'+i).value);
     const p=parseFloat(document.getElementById('mp-'+i).value);
-    if(isNaN(sMin)||isNaN(sMax)||isNaN(p)){alert('All values must be numbers.');return;}
-    if(sMin > sMax){alert(`Row ${i+1}: Min score cannot be greater than Max score.`);return;}
-    rows.push([sMin,sMax,p]);
+    if(isNaN(minS)||isNaN(maxS)||isNaN(p)){alert('All input matrix fields must be regular numerical expressions.');return;}
+    rows.push([minS,maxS,p]);
   }
   rows.sort((a,b)=>a[0]-b[0]);activeMaster[masterSec]=rows;
-  await saveToFirebase('pm_master', activeMaster);renderMasterPanel();flash('master-saved','✓ Saved & applied');
+  await saveToFirebase('pm_master', activeMaster);renderMasterPanel();flash('master-saved','✓ Saved & applied section distribution ranges');
 }
 
 // ── RESET ──
 async function resetAllData(){
   if(!confirm('Reset ALL data to factory defaults? Cannot be undone.'))return;
   ['pm_curve','pm_curve_rows','pm_colleges','pm_slotmeta','pm_catrelax','pm_slotdist','pm_master','pm_slotoffsets'].forEach(k=>localStorage.removeItem(k));
-  activeCurveRows=DEFAULT_CURVE.map(p=>({minScore:p[0],maxScore:p[1],pct:p[2]}));
+  activeCurveRows=DEFAULT_CURVE.map(p=>({...p}));
   activeColleges=DEFAULT_COLLEGES.map(c=>({...c}));
   activeSlotMeta=JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
   activeCatRelax={...DEFAULT_CATCO};
@@ -768,7 +776,7 @@ async function resetAllData(){
   activeSlotOffsets={S1:0,S2:4,S3:2};
   if(sbAccessToken){
     await saveToFirebase('pm_curve_rows', activeCurveRows);
-    await saveToFirebase('pm_curve', DEFAULT_CURVE.map(p=>[...p]));
+    await saveToFirebase('pm_curve', DEFAULT_CURVE.map(p=>[p.minScore,p.maxScore,p.pct]));
     await saveToFirebase('pm_colleges', activeColleges);
     await saveToFirebase('pm_slotmeta', activeSlotMeta);
     await saveToFirebase('pm_catrelax', activeCatRelax);
