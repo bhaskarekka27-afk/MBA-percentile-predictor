@@ -55,9 +55,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 .dm-input{padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--td);background:var(--white);outline:none;transition:border-color .14s;width:100%}
 .dm-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,70,229,.08)}
 .dm-td{padding:6px 8px;border-bottom:1px solid var(--border2);vertical-align:middle}
-.del-btn{padding:3px 9px;background:var(--badbg);border:1px solid var(--badbdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--bad);cursor:pointer}
+.del-btn{padding:3px 9px;background:var(--badbg);border:1.5px solid var(--badbdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--bad);cursor:pointer}
 .del-btn:hover{background:var(--bad);color:#fff}
-.edit-btn{padding:3px 9px;background:var(--infobg);border:1px solid var(--infobdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--infotxt);cursor:pointer;margin-right:3px}
+.edit-btn{padding:3px 9px;background:var(--infobg);border:1.5px solid var(--infobdr);border-radius:5px;font-family:inherit;font-size:11px;font-weight:600;color:var(--infotxt);cursor:pointer;margin-right:3px}
 .edit-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 .dsecbtn{padding:5px 13px;background:var(--s3);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--tmu);cursor:pointer}
 .dsecbtn:hover{border-color:var(--accent);color:var(--accent)}
@@ -186,8 +186,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
     <div class="dm-card" style="padding:0;overflow:hidden">
       <div class="dm-card-head" style="padding:1rem 1.2rem">
         <div>
-          <div class="dm-card-title">College Cut-offs &amp; Placements</div>
-          <div class="dm-card-desc">Set the minimum percentile required per college and placement data. Used for Reach / Match / Safety classification.</div>
+          <div class="dm-card-title">College Cut-offs</div>
+          <div class="dm-card-desc">Set the minimum percentile required per college. Used for Reach / Match / Safety classification.</div>
         </div>
         <button class="dm-btn-pri" onclick="openModal(null)" style="flex-shrink:0">+ Add College</button>
       </div>
@@ -197,8 +197,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
             <th class="dm-th" style="padding-left:1.2rem">College</th>
             <th class="dm-th">Tier</th>
             <th class="dm-th">Cut-off <span class="dm-th-hint">General %ile</span></th>
-            <th class="dm-th">Avg Pkg <span class="dm-th-hint">₹L</span></th>
-            <th class="dm-th">Max Pkg <span class="dm-th-hint">₹L</span></th>
             <th class="dm-th"></th>
           </tr></thead>
           <tbody id="college-tbody"></tbody>
@@ -342,10 +340,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
     <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--td);margin-bottom:1rem" id="modal-title">Add College</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
       <div class="field" style="grid-column:1/-1"><div class="flabel">College Name *</div><input class="dm-input" id="m-name" placeholder="e.g. IIM Ahmedabad"></div>
-      <div class="field"><div class="flabel">Tier</div><input class="dm-input" id="m-tier" placeholder="e.g. IIM-ABC"></div>
-      <div class="field"><div class="flabel">Cut-off Percentile (GEN) *</div><input class="dm-input" id="m-co" type="number" min="50" max="100" step="0.5" placeholder="99.0"></div>
-      <div class="field"><div class="flabel">Avg Package (₹L) *</div><input class="dm-input" id="m-avg" type="number" min="1" max="200" step="0.1" placeholder="34.5"></div>
-      <div class="field"><div class="flabel">Max Package (₹L)</div><input class="dm-input" id="m-max" type="number" min="1" max="500" placeholder="78"></div>
+      <div class="field" style="grid-column:1/-1"><div class="flabel">Tier</div><input class="dm-input" id="m-tier" placeholder="e.g. IIM-ABC"></div>
+      <div class="field" style="grid-column:1/-1"><div class="flabel">Cut-off Percentile (GEN) *</div><input class="dm-input" id="m-co" type="number" min="50" max="100" step="0.5" placeholder="99.0"></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button onclick="closeModal()" style="padding:8px 18px;background:var(--s3);border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--tm);cursor:pointer">Cancel</button>
@@ -357,8 +353,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 
 <script>
 // ════════════════════════════════════════════════════
-//  SUPABASE CONFIG — fill in from:
-//  supabase.com → Project → Settings → API
+//  SUPABASE CONFIG 
 // ════════════════════════════════════════════════════
 const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';
 const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';
@@ -461,7 +456,6 @@ async function loadFromSupabase(){
       const d = {};
       rows.forEach(r => d[r.key]=r.value);
       if(d.pm_curve_rows) {
-         // Fallback verification mapping single score primitives to accurate array maps
          activeCurveRows = d.pm_curve_rows.map(r => r.minScore !== undefined ? r : {minScore: r.score||0, maxScore: r.score||0, pct: r.pct||0});
       }
       if(d.pm_colleges)    activeColleges    = d.pm_colleges;
@@ -521,7 +515,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   }
 });
 
-// ── FIXED MAP STRUCTS OVERALL SECTIONS (Mapped to match [MinScore, MaxScore, Percentile] ranges) ──
+// ── DEFAULT DATA ──
 const DEFAULT_CURVE=[
   {minScore:0,maxScore:10,pct:0.1},{minScore:11,maxScore:14,pct:55},{minScore:15,maxScore:18,pct:60},
   {minScore:18,maxScore:20,pct:65},{minScore:20,maxScore:23,pct:70},{minScore:25,maxScore:30,pct:75},
@@ -542,19 +536,19 @@ const DEFAULT_SLOTMETA={
   S3:{lbl:'Slot 3 — Evening (CAT 2025)',diff:'Moderate-Hard',note:'Moderate-Hard slot. Small normalization boost applied.'},
 };
 const DEFAULT_COLLEGES=[
-  {name:'IIM Ahmedabad',tier:'IIM-ABC',co:99.0,avg:36.5,max:85},{name:'IIM Bangalore',tier:'IIM-ABC',co:99.0,avg:35.2,max:68},
-  {name:'IIM Calcutta',tier:'IIM-ABC',co:98.5,avg:35.8,max:78},{name:'FMS Delhi',tier:'Central',co:98.5,avg:30.2,max:58},
-  {name:'IIM Lucknow',tier:'IIM-Next',co:97.5,avg:30.1,max:55},{name:'IIM Kozhikode',tier:'IIM-Next',co:97.0,avg:27.8,max:50},
-  {name:'IIM Indore',tier:'IIM-Next',co:97.0,avg:27.4,max:48},{name:'XLRI Jamshedpur',tier:'Top Pvt',co:95.5,avg:31.5,max:62},
-  {name:'IIM Shillong',tier:'IIM-New',co:95.0,avg:21.8,max:40},{name:'MDI Gurgaon',tier:'Top Pvt',co:95.0,avg:25.8,max:50},
-  {name:'SPJIMR Mumbai',tier:'Top Pvt',co:94.0,avg:30.2,max:58},{name:'IIM Udaipur',tier:'IIM-New',co:93.0,avg:18.5,max:32},
-  {name:'IIM Trichy',tier:'IIM-New',co:93.0,avg:17.9,max:30},{name:'IIM Raipur',tier:'IIM-New',co:92.0,avg:16.2,max:28},
-  {name:'IIM Rohtak',tier:'IIM-New',co:91.0,avg:15.8,max:26},{name:'NMIMS Mumbai',tier:'Top Pvt',co:91.0,avg:24.0,max:46},
-  {name:'IIM Kashipur',tier:'IIM-New',co:90.0,avg:15.0,max:25},{name:'XIMB Bhubaneswar',tier:'Pvt',co:88.0,avg:18.4,max:35},
-  {name:'Xavier Bhubaneswar',tier:'Pvt',co:87.0,avg:17.5,max:32},{name:'IMT Ghaziabad',tier:'Pvt',co:85.0,avg:15.0,max:30},
-  {name:'Fore School Delhi',tier:'Pvt',co:85.0,avg:13.2,max:24},{name:'Great Lakes Chennai',tier:'Pvt',co:83.0,avg:14.2,max:26},
-  {name:'LBSIM Delhi',tier:'Pvt',co:82.0,avg:11.8,max:21},{name:'Symbiosis Pune',tier:'Pvt',co:80.0,avg:12.2,max:24},
-  {name:'TAPMI Manipal',tier:'Pvt',co:80.0,avg:11.8,max:22},{name:'BIMTECH Gr. Noida',tier:'Pvt',co:75.0,avg:10.2,max:20},
+  {name:'IIM Ahmedabad',tier:'IIM-ABC',co:99.0},{name:'IIM Bangalore',tier:'IIM-ABC',co:99.0},
+  {name:'IIM Calcutta',tier:'IIM-ABC',co:98.5},{name:'FMS Delhi',tier:'Central',co:98.5},
+  {name:'IIM Lucknow',tier:'IIM-Next',co:97.5},{name:'IIM Kozhikode',tier:'IIM-Next',co:97.0},
+  {name:'IIM Indore',tier:'IIM-Next',co:97.0},{name:'XLRI Jamshedpur',tier:'Top Pvt',co:95.5},
+  {name:'IIM Shillong',tier:'IIM-New',co:95.0},{name:'MDI Gurgaon',tier:'Top Pvt',co:95.0},
+  {name:'SPJIMR Mumbai',tier:'Top Pvt',co:94.0},{name:'IIM Udaipur',tier:'IIM-New',co:93.0},
+  {name:'IIM Trichy',tier:'IIM-New',co:93.0},{name:'IIM Raipur',tier:'IIM-New',co:92.0},
+  {name:'IIM Rohtak',tier:'IIM-New',co:91.0},{name:'NMIMS Mumbai',tier:'Top Pvt',co:91.0},
+  {name:'IIM Kashipur',tier:'IIM-New',co:90.0},{name:'XIMB Bhubaneswar',tier:'Pvt',co:88.0},
+  {name:'Xavier Bhubaneswar',tier:'Pvt',co:87.0},{name:'IMT Ghaziabad',tier:'Pvt',co:85.0},
+  {name:'Fore School Delhi',tier:'Pvt',co:85.0},{name:'Great Lakes Chennai',tier:'Pvt',co:83.0},
+  {name:'LBSIM Delhi',tier:'Pvt',co:82.0},{name:'Symbiosis Pune',tier:'Pvt',co:80.0},
+  {name:'TAPMI Manipal',tier:'Pvt',co:80.0},{name:'BIMTECH Gr. Noida',tier:'Pvt',co:75.0},
 ];
 
 // ── LIVE STATE ──
@@ -644,8 +638,6 @@ function renderColleges(){
       <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;color:var(--td)">${c.name}</td>
       <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12px;color:var(--tmu)">${c.tier}</td>
       <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:${c.co>=97?'#dc2626':c.co>=90?'#d97706':'#059669'}">${c.co}th</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12.5px;color:#059669;font-weight:600">₹${c.avg}L</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border2);font-size:12.5px;color:var(--tm)">₹${c.max}L</td>
       <td style="padding:8px 12px;border-bottom:1px solid var(--border2)">
         <button class="edit-btn" onclick="openModal(${i})">Edit</button>
         <button class="del-btn" onclick="deleteCollege(${i})">✕</button>
@@ -656,8 +648,8 @@ let editIdx=null;
 function openModal(idx){
   editIdx=idx;
   document.getElementById('modal-title').textContent=idx===null?'Add College':'Edit College';
-  const c=idx!==null?activeColleges[idx]:{name:'',tier:'',co:'',avg:'',max:''};
-  ['name','tier','co','avg','max'].forEach(k=>document.getElementById('m-'+k).value=c[k]||'');
+  const c=idx!==null?activeColleges[idx]:{name:'',tier:'',co:''};
+  ['name','tier','co'].forEach(k=>document.getElementById('m-'+k).value=c[k]||'');
   document.getElementById('modal-err').textContent='';
   document.getElementById('college-modal').style.display='flex';
 }
@@ -666,12 +658,9 @@ async function saveCollege(){
   const name=document.getElementById('m-name').value.trim();
   const tier=document.getElementById('m-tier').value.trim()||'Pvt';
   const co=parseFloat(document.getElementById('m-co').value);
-  const avg=parseFloat(document.getElementById('m-avg').value);
-  const max=parseFloat(document.getElementById('m-max').value)||avg+10;
   if(!name){document.getElementById('modal-err').textContent='College name required.';return;}
   if(isNaN(co)||co<50||co>100){document.getElementById('modal-err').textContent='Cut-off must be 50–100.';return;}
-  if(isNaN(avg)||avg<1){document.getElementById('modal-err').textContent='Avg package must be ≥ 1.';return;}
-  const obj={name,tier,co,avg,max};
+  const obj={name,tier,co};
   if(editIdx!==null) activeColleges[editIdx]=obj;
   else activeColleges.push(obj);
   activeColleges.sort((a,b)=>b.co-a.co);
@@ -811,7 +800,7 @@ async function loadSubmissions(){
     filteredSubs = [...allSubs];
     console.log('Submissions loaded:', allSubs.length, 'rows', allSubs[0]);
     try{ renderSubStats(allSubs); } catch(e){ console.error('renderSubStats error:', e); }
-    try{ renderSubTable(filteredSubs); } catch(e){ console.error('renderSubTable error:', e); }
+    try{ renderSubTable(filteredSubs); } catch(e){ console.error('renderSubTable error:', e); item.style.display='block';}
     if(loadEl)  loadEl.style.display='none';
     if(tableEl) tableEl.style.display='block';
   } catch(e){
@@ -906,6 +895,7 @@ function renderSubTable(rows){
   if(countEl) countEl.textContent=`Showing ${rows.length} of ${allSubs.length} submissions`;
 }
 
+// ── EXPORT CSV ──
 function exportSubCSV(){
   if(!filteredSubs.length){alert('No data to export.');return;}
   const headers=['Name','Mobile','Category','Gender','Slot','VARC Raw','LRDI Raw','QA Raw','Total Raw','Normalized','Percentile','Tier','Date'];
