@@ -134,7 +134,7 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
 .ftab{padding:4px 10px;background:var(--white);border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--tmu);cursor:pointer}
 .ftab.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .col-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.col-table{width:100%;border-collapse:collapse;min-width:540px}
+.col-table{width:100%;border-collapse:collapse;min-width:440px}
 .col-table th{font-size:11.5px;font-weight:700;color:var(--tmu);padding:9px 14px;text-align:left;border-bottom:1.5px solid var(--border);background:var(--s2);white-space:nowrap}
 .col-table td{font-size:13px;padding:10px 14px;border-bottom:1px solid var(--border2);color:var(--tm);vertical-align:middle}
 .col-table tr:last-child td{border:none}
@@ -194,13 +194,11 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
 
 <div class="pages">
 
-<!-- PAGE 1 — FORM -->
 <div class="page visible" id="page-form">
   <div class="form-wrap">
     <div class="form-card">
       <div class="fc-title">Predict Your CAT 2025 Percentile</div>
       <div class="fc-sub">Enter your section-wise scores for an instant percentile prediction with college recommendations based on latest 2026 cut-offs.</div>
-      <!-- DB status — auto-hides after 3s -->
       <div id="db-status" style="font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:7px;margin-bottom:10px;transition:opacity .4s;background:var(--infobg);color:var(--infotxt)">⏳ Loading latest data...</div>
 
       <div class="grid-2">
@@ -250,7 +248,6 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
 
       <div class="secdiv"><span>Section-Wise Score Entry</span></div>
       <div class="sec3">
-        <!-- VARC -->
         <div class="seccard">
           <div class="sc-top">
             <div class="sc-name-wrap">
@@ -266,7 +263,6 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
           </div>
           <div class="sc-foot"><span class="sc-sl">Score</span><span class="sc-sv" id="varc-score">—</span><span class="sc-acc" id="varc-acc"></span></div>
         </div>
-        <!-- LRDI -->
         <div class="seccard">
           <div class="sc-top">
             <div class="sc-name-wrap">
@@ -282,7 +278,6 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
           </div>
           <div class="sc-foot"><span class="sc-sl">Score</span><span class="sc-sv" id="lrdi-score">—</span><span class="sc-acc" id="lrdi-acc"></span></div>
         </div>
-        <!-- QA -->
         <div class="seccard">
           <div class="sc-top">
             <div class="sc-name-wrap">
@@ -315,7 +310,6 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
   </div>
 </div>
 
-<!-- PAGE 2 — RESULT -->
 <div class="page" id="page-result">
   <div class="result-inner">
     <div class="back-row">
@@ -358,7 +352,7 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
         <table class="col-table">
           <thead><tr>
             <th>Institution</th><th>Tier</th><th>Cut-off</th>
-            <th>Prediction</th><th>Probability</th><th>Avg Pkg</th>
+            <th>Prediction</th><th>Probability</th>
           </tr></thead>
           <tbody id="col-body"></tbody>
         </table>
@@ -367,15 +361,12 @@ nav{height:56px;background:var(--white);border-bottom:1px solid var(--border);di
   </div>
 </div>
 
-</div><!-- /pages -->
-
-<script>
+</div><script>
 // ════════════════════════════════════════════════════
-//  SUPABASE CONFIG — fill in from:
-//  supabase.com → Project → Settings → API
+//  SUPABASE CONFIG
 // ════════════════════════════════════════════════════
-const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';   // e.g. https://xyzabc.supabase.co
-const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';      // long string starting with eyJ...
+const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';
+const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';
 // ════════════════════════════════════════════════════
 
 // ── DEFAULTS (used if Firebase unavailable or not configured) ──
@@ -392,24 +383,23 @@ const D_SLOTMETA={
   S3:{lbl:'Slot 3 — Evening (CAT 2025)',diff:'Moderate-Hard',note:'Moderate-Hard slot. Small normalization boost applied.'},
 };
 const D_COLLEGES=[
-  {name:'IIM Ahmedabad',tier:'IIM-ABC',co:99.0,avg:36.5,max:85},{name:'IIM Bangalore',tier:'IIM-ABC',co:99.0,avg:35.2,max:68},
-  {name:'IIM Calcutta',tier:'IIM-ABC',co:98.5,avg:35.8,max:78},{name:'FMS Delhi',tier:'Central',co:98.5,avg:30.2,max:58},
-  {name:'IIM Lucknow',tier:'IIM-Next',co:97.5,avg:30.1,max:55},{name:'IIM Kozhikode',tier:'IIM-Next',co:97.0,avg:27.8,max:50},
-  {name:'IIM Indore',tier:'IIM-Next',co:97.0,avg:27.4,max:48},{name:'XLRI Jamshedpur',tier:'Top Pvt',co:95.5,avg:31.5,max:62},
-  {name:'IIM Shillong',tier:'IIM-New',co:95.0,avg:21.8,max:40},{name:'MDI Gurgaon',tier:'Top Pvt',co:95.0,avg:25.8,max:50},
-  {name:'SPJIMR Mumbai',tier:'Top Pvt',co:94.0,avg:30.2,max:58},{name:'IIM Udaipur',tier:'IIM-New',co:93.0,avg:18.5,max:32},
-  {name:'IIM Trichy',tier:'IIM-New',co:93.0,avg:17.9,max:30},{name:'IIM Raipur',tier:'IIM-New',co:92.0,avg:16.2,max:28},
-  {name:'IIM Rohtak',tier:'IIM-New',co:91.0,avg:15.8,max:26},{name:'NMIMS Mumbai',tier:'Top Pvt',co:91.0,avg:24.0,max:46},
-  {name:'IIM Kashipur',tier:'IIM-New',co:90.0,avg:15.0,max:25},{name:'XIMB Bhubaneswar',tier:'Pvt',co:88.0,avg:18.4,max:35},
-  {name:'Xavier Bhubaneswar',tier:'Pvt',co:87.0,avg:17.5,max:32},{name:'IMT Ghaziabad',tier:'Pvt',co:85.0,avg:15.0,max:30},
-  {name:'Fore School Delhi',tier:'Pvt',co:85.0,avg:13.2,max:24},{name:'Great Lakes Chennai',tier:'Pvt',co:83.0,avg:14.2,max:26},
-  {name:'LBSIM Delhi',tier:'Pvt',co:82.0,avg:11.8,max:21},{name:'Symbiosis Pune',tier:'Pvt',co:80.0,avg:12.2,max:24},
-  {name:'TAPMI Manipal',tier:'Pvt',co:80.0,avg:11.8,max:22},{name:'BIMTECH Gr. Noida',tier:'Pvt',co:75.0,avg:10.2,max:20},
+  {name:'IIM Ahmedabad',tier:'IIM-ABC',co:99.0},{name:'IIM Bangalore',tier:'IIM-ABC',co:99.0},
+  {name:'IIM Calcutta',tier:'IIM-ABC',co:98.5},{name:'FMS Delhi',tier:'Central',co:98.5},
+  {name:'IIM Lucknow',tier:'IIM-Next',co:97.5},{name:'IIM Kozhikode',tier:'IIM-Next',co:97.0},
+  {name:'IIM Indore',tier:'IIM-Next',co:97.0},{name:'XLRI Jamshedpur',tier:'Top Pvt',co:95.5},
+  {name:'IIM Shillong',tier:'IIM-New',co:95.0},{name:'MDI Gurgaon',tier:'Top Pvt',co:95.0},
+  {name:'SPJIMR Mumbai',tier:'Top Pvt',co:94.0},{name:'IIM Udaipur',tier:'IIM-New',co:93.0},
+  {name:'IIM Trichy',tier:'IIM-New',co:93.0},{name:'IIM Raipur',tier:'IIM-New',co:92.0},
+  {name:'IIM Rohtak',tier:'IIM-New',co:91.0},{name:'NMIMS Mumbai',tier:'Top Pvt',co:91.0},
+  {name:'IIM Kashipur',tier:'IIM-New',co:90.0},{name:'XIMB Bhubaneswar',tier:'Pvt',co:88.0},
+  {name:'Xavier Bhubaneswar',tier:'Pvt',co:87.0},{name:'IMT Ghaziabad',tier:'Pvt',co:85.0},
+  {name:'Fore School Delhi',tier:'Pvt',co:85.0},{name:'Great Lakes Chennai',tier:'Pvt',co:83.0},
+  {name:'LBSIM Delhi',tier:'Pvt',co:82.0},{name:'Symbiosis Pune',tier:'Pvt',co:80.0},
+  {name:'TAPMI Manipal',tier:'Pvt',co:80.0},{name:'BIMTECH Gr. Noida',tier:'Pvt',co:75.0},
 ];
 
 // ── ACTIVE STATE — populated by loadConfig() ──
 let activeCurve, activeColleges, activeSlotMeta, activeCatRelax, activeMaster, activeSlotOffsets;
-
 function applyConfig(cfg){
   activeCurve        = cfg.pm_curve        || D_CURVE.map(p=>[...p]);
   activeColleges     = cfg.pm_colleges     || D_COLLEGES.map(c=>({...c}));
@@ -417,7 +407,6 @@ function applyConfig(cfg){
   activeCatRelax     = cfg.pm_catrelax     || {...D_CATCO};
   activeMaster       = cfg.pm_master       || JSON.parse(JSON.stringify(D_MASTER));
   activeSlotOffsets  = cfg.pm_slotoffsets  || {S1:0,S2:4,S3:2};
-  // Cache to localStorage for offline fallback
   Object.entries(cfg).forEach(([k,v])=>localStorage.setItem(k, JSON.stringify(v)));
 }
 
@@ -434,14 +423,12 @@ function loadFromCache(){
 
 async function loadConfig(){
   const dbBanner = document.getElementById('db-status');
-  // If Supabase not yet configured, use cache/defaults silently
   if(!SB_URL || SB_URL === 'YOUR_PROJECT_URL'){
     loadFromCache();
     if(dbBanner) dbBanner.style.display='none';
     return;
   }
   try{
-    // Supabase REST — public read, no auth needed (RLS policy allows SELECT for all)
     const res = await fetch(`${SB_URL}/rest/v1/config?select=key,value`,{
       headers:{
         'apikey': SB_ANON_KEY,
@@ -449,15 +436,15 @@ async function loadConfig(){
       }
     });
     if(!res.ok) throw new Error(`Supabase ${res.status}`);
-    const rows = await res.json();          // [{key:'pm_curve',value:[...]}, ...]
+    const rows = await res.json();
     if(rows && rows.length){
       const cfg = {};
       rows.forEach(r => cfg[r.key] = r.value);
       applyConfig(cfg);
-      if(dbBanner){ dbBanner.textContent='🟢 Live data loaded from database'; dbBanner.style.background='#d1fae5'; dbBanner.style.color='#065f46'; }
+      if(dbBanner){ dbBanner.textContent='🟢 Live data loaded from database'; dbBanner.style.background='#d1fae5'; dbBanner.style.color='#065f46';}
     } else {
       loadFromCache();
-      if(dbBanner){ dbBanner.textContent='⚠ DB is empty — using built-in defaults'; dbBanner.style.background='#fef3c7'; dbBanner.style.color='#92400e'; }
+      if(dbBanner){ dbBanner.textContent='⚠ DB is empty — using built-in defaults'; dbBanner.style.background='#fef3c7'; dbBanner.style.color='#92400e';}
     }
   } catch(e){
     loadFromCache();
@@ -564,15 +551,13 @@ function predict(){
   document.getElementById('rh-greeting').textContent=`Hello, ${name} 👋`;
   document.getElementById('rh-pct').textContent=pct.toFixed(1);
   const te=document.getElementById('rh-tier');te.textContent=tier.l;te.className='rh-tier '+tier.c;
-  document.getElementById('result-meta').textContent=`CAT 2025 · ${meta.lbl} · Category: ${cat} · 2026 Cut-offs`;
+  document.getElementById('result-meta').textContent=meta.lbl?`CAT 2025 · ${meta.lbl} · Category: ${cat} · 2026 Cut-offs`:`CAT 2025 · Category: ${cat} · 2026 Cut-offs`;
   document.getElementById('rh-stats').innerHTML=`
     <div class="rh-stat"><div class="rhs-val">${vr}<span style="font-size:12px;color:#4f46e5;margin-left:4px">→${Math.round(vn)}</span></div><div class="rhs-sub">VARC Score</div></div>
     <div class="rh-stat"><div class="rhs-val">${lr}<span style="font-size:12px;color:#0ea5e9;margin-left:4px">→${Math.round(ln)}</span></div><div class="rhs-sub">LRDI Score</div></div>
     <div class="rh-stat"><div class="rhs-val">${qr}<span style="font-size:12px;color:#10b981;margin-left:4px">→${Math.round(qn)}</span></div><div class="rhs-sub">QA Score</div></div>`;
-
-  const boostStr=delta>0?`<strong style="color:#059669">+${delta} pt boost</strong> (${meta.diff} slot)`:delta<0?`<strong style="color:#dc2626">${delta} pt adj</strong> (${meta.diff} slot)`:`No adjustment (${meta.diff} slot)`;
+  const boostStr=delta>0?`<strong style="color:#059669">+${delta} pt boost</strong> (${meta.diff||'—'} slot)`:delta<0?`<strong style="color:#dc2626">${delta} pt adj</strong> (${meta.diff||'—'} slot)`:`No adjustment (${meta.diff||'—'} slot)`;
   document.getElementById('norm-text').innerHTML=`<strong>Slot Normalization (IIM EPN):</strong> Raw <strong>${tr}</strong> → Normalized <strong style="color:#4f46e5">${tn}</strong> · ${boostStr}`;
-
   allCollegeRows=activeColleges.map(c=>{
     const effCo=Math.max(0,c.co+catR);const gap=pct-effCo;
     let pred,cls,prob;
@@ -583,14 +568,12 @@ function predict(){
     prob=Math.round(Math.min(90,prob));
     return{...c,pred,cls,prob,effCo,pbCls:prob>=60?'ph':prob>=35?'pm':'pl'};
   }).filter(Boolean).sort((a,b)=>b.effCo-a.effCo);
-
   renderColleges(allCollegeRows);
   document.querySelectorAll('.ftab').forEach((t,i)=>t.classList.toggle('on',i===0));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('visible'));
   document.getElementById('page-result').classList.add('visible');
   window.scrollTo(0,0);
 
-  // Save submission to Supabase (fire-and-forget, doesn't block UI)
   saveSubmission({
     name, mobile, category:cat,
     gender: document.getElementById('f-gender').value||'',
@@ -610,7 +593,7 @@ function predict(){
 
 // ── SAVE SUBMISSION ──────────────────────────────────
 async function saveSubmission(data){
-  if(!SB_URL || SB_URL==='YOUR_PROJECT_URL') return; // not configured
+  if(!SB_URL || SB_URL==='YOUR_PROJECT_URL') return;
   try{
     await fetch(`${SB_URL}/rest/v1/submissions`,{
       method:'POST',
@@ -633,14 +616,13 @@ function renderColleges(rows){
   document.getElementById('col-count').textContent=rows.length+' colleges matched';
   document.getElementById('col-body').innerHTML=rows.length
     ?rows.map(c=>`<tr data-pred="${c.pred}">
-      <td><div class="cn">${c.name}</div><div class="cm">Max ₹${c.max}L</div></td>
-      <td><span class="tiertag">${c.tier}</span></td>
-      <td><span style="font-size:13px;font-weight:700;color:${c.effCo>=97?'#dc2626':c.effCo>=90?'#d97706':'#059669'}">${c.effCo.toFixed(0)}th</span></td>
-      <td><span class="catbadge ${c.cls}">${c.pred}</span></td>
-      <td><div class="probcell"><div class="probbar"><div class="probfill ${c.pbCls}" style="width:${c.prob}%"></div></div><span class="probnum">${c.prob}%</span></div></td>
-      <td style="font-size:13px;font-weight:700;color:#059669">₹${c.avg}L</td>
+      <td><div class=\"cn\">${c.name}</div></td>
+      <td><span class=\"tiertag\">${c.tier}</span></td>
+      <td><span style=\"font-size:13px;font-weight:700;color:${c.effCo>=97?'#dc2626':c.effCo>=90?'#d97706':'#059669'}\">${c.effCo.toFixed(0)}th</span></td>
+      <td><span class=\"catbadge ${c.cls}\">${c.pred}</span></td>
+      <td><div class=\"probcell\"><div class=\"probbar\"><div class=\"probfill ${c.pbCls}\" style=\"width:${c.prob}%\"></div></div><span class=\"probnum\">${c.prob}%</span></div></td>
     </tr>`).join('')
-    :`<tr><td colspan="6" class="empty-row">Score too low — keep preparing! 💪</td></tr>`;
+    :`<tr><td colspan="5" class="empty-row">Score too low — keep preparing! 💪</td></tr>`;
 }
 function filterColleges(type,btn){
   document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
