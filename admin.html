@@ -79,7 +79,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="login-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;padding:1.5rem;background:var(--bg)">
   <div style="background:var(--white);border-radius:16px;padding:2rem 2.2rem;width:380px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,.1);border:1.5px solid var(--border)">
     <div style="text-align:center;margin-bottom:1.5rem">
@@ -103,10 +102,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
   </div>
 </div>
 
-<!-- MAIN APP (hidden until login) -->
 <div id="app" style="display:none">
 
-<!-- ADMIN HEADER -->
 <div class="admin-header">
   <div class="admin-title-wrap">
     <div class="admin-badge">⚙</div>
@@ -128,10 +125,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
   </div>
 </div>
 
-<!-- DB status bar -->
 <div id="db-load-status" style="display:none;font-size:12px;font-weight:500;padding:6px 1.5rem;border-bottom:1px solid var(--border);background:var(--s2)"></div>
 
-<!-- TABS -->
 <div class="tabs-wrap">
   <div class="tabs">
     <button class="dmtab on" id="dtab-curve"       onclick="switchTab('curve',this)">📈 Score vs Percentile</button>
@@ -143,13 +138,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 
 <div class="content">
 
-  <!-- ═══ TAB 1: CURVE ═══ -->
   <div class="panel active" id="panel-curve">
     <div class="dm-card">
       <div class="dm-card-head">
         <div>
-          <div class="dm-card-title">Score → Percentile Data</div>
-          <div class="dm-card-desc">Maps a <strong>normalized score</strong> to a <strong>percentile</strong>. Add one row per data point. Sort order doesn't matter — handled automatically on save.</div>
+          <div class="dm-card-title">Score Range → Percentile Data</div>
+          <div class="dm-card-desc">Maps a <strong>normalized score range</strong> to a <strong>percentile</strong>. Add one row per range point. Sort order handled automatically on save.</div>
         </div>
         <div style="display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap">
           <button class="dm-btn-sec" onclick="importCSV()">⬆ Import CSV</button>
@@ -161,10 +155,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
         <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2"/><path d="M8 5v4l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <span id="active-curve-text">Loading...</span>
       </div>
-      <!-- CSV import area -->
       <div id="csv-import-area" style="display:none;background:var(--s2);border:1.5px solid var(--border);border-radius:9px;padding:12px;margin-bottom:12px">
-        <div style="font-size:12.5px;font-weight:600;color:var(--td);margin-bottom:6px">Paste CSV — one row per line: <code style="background:var(--white);padding:1px 6px;border-radius:4px;font-size:11.5px">Score, Percentile</code></div>
-        <textarea id="csv-input" style="width:100%;height:80px;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none;color:var(--td)" placeholder="87, 99&#10;67, 95&#10;53, 90&#10;43, 85"></textarea>
+        <div style="font-size:12.5px;font-weight:600;color:var(--td);margin-bottom:6px">Paste CSV — one row per line: <code style="background:var(--white);padding:1px 6px;border-radius:4px;font-size:11.5px">MinScore, MaxScore, Percentile</code></div>
+        <textarea id="csv-input" style="width:100%;height:80px;padding:7px 9px;border:1.5px solid var(--border);border-radius:6px;font-family:'Courier New',monospace;font-size:12px;resize:vertical;outline:none;color:var(--td)" placeholder="115, 119, 99.9&#10;85, 90, 99&#10;70, 75, 97"></textarea>
         <div style="display:flex;gap:7px;margin-top:7px;flex-wrap:wrap">
           <button class="dm-btn-pri" style="font-size:12px;padding:6px 14px" onclick="processCSV()">Import (Append)</button>
           <button style="padding:6px 14px;background:var(--badbg);border:1.5px solid var(--badbdr);border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;color:var(--bad);cursor:pointer" onclick="processCSV(true)">Replace All</button>
@@ -174,8 +167,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       <div style="overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;min-width:300px">
           <thead><tr style="background:var(--s2)">
-            <th class="dm-th" style="width:45%">Normalized Score <span class="dm-th-hint">Post-slot adjustment</span></th>
-            <th class="dm-th" style="width:45%">Percentile <span class="dm-th-hint">0 – 100</span></th>
+            <th class="dm-th" style="width:25%">Min Score</th>
+            <th class="dm-th" style="width:25%">Max Score</th>
+            <th class="dm-th" style="width:40%">Percentile <span class="dm-th-hint">0 – 100</span></th>
             <th class="dm-th" style="width:10%"></th>
           </tr></thead>
           <tbody id="curve-tbody"></tbody>
@@ -188,7 +182,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
     </div>
   </div>
 
-  <!-- ═══ TAB 2: COLLEGES ═══ -->
   <div class="panel" id="panel-colleges">
     <div class="dm-card" style="padding:0;overflow:hidden">
       <div class="dm-card-head" style="padding:1rem 1.2rem">
@@ -214,10 +207,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
     </div>
   </div>
 
-  <!-- ═══ TAB 3: SETTINGS ═══ -->
   <div class="panel" id="panel-settings">
 
-    <!-- Category relaxation -->
     <div class="dm-card">
       <div class="dm-card-title" style="margin-bottom:.25rem">Category Cut-off Relaxation</div>
       <div class="dm-card-desc" style="margin-bottom:1rem">How many percentile points to <strong>subtract from a college's cut-off</strong> for each category. Makes more colleges accessible for reserved categories. Keep General at 0. Enter negative numbers.</div>
@@ -228,7 +219,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
     </div>
 
-    <!-- Slot offsets -->
     <div class="dm-card">
       <div class="dm-card-title" style="margin-bottom:.25rem">Slot Difficulty Offsets</div>
       <div class="dm-card-desc" style="margin-bottom:1rem">How many points to <strong>add</strong> to scores from each slot to compensate for difficulty differences. Slot 1 (easiest) = 0. Slot 2 (hardest) = larger number like 4.</div>
@@ -242,7 +232,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
     </div>
 
-    <!-- Slot labels -->
     <div class="dm-card">
       <div class="dm-card-title" style="margin-bottom:.25rem">Slot Labels</div>
       <div class="dm-card-desc" style="margin-bottom:1rem">Labels shown to students on the predictor form. No effect on calculation.</div>
@@ -253,12 +242,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
     </div>
 
-    <!-- Advanced: master distributions -->
     <div class="dm-card">
       <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleAdv()">
         <div>
           <div class="dm-card-title" style="margin-bottom:.2rem">Advanced: Section Score Distributions</div>
-          <div class="dm-card-desc">Master normalization tables (VARC, LRDI, QA). Edit only if you have precise section-level data.</div>
+          <div class="dm-card-desc">Master normalization tables (VARC, LRDI, QA). Edit only if you have precise section-level range data.</div>
         </div>
         <span id="adv-icon" style="font-size:18px;color:var(--tmu);flex-shrink:0;margin-left:12px">▸</span>
       </div>
@@ -268,7 +256,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
           <button class="dsecbtn" id="mbtn-lrdi" onclick="switchMasterSec('lrdi',this)">LRDI</button>
           <button class="dsecbtn" id="mbtn-qa"   onclick="switchMasterSec('qa',this)">QA</button>
         </div>
-        <div style="font-size:11.5px;color:var(--tmu);margin-bottom:8px">Each row: <code style="background:var(--s3);padding:1px 5px;border-radius:4px">Section Score → Intra-section Percentile</code></div>
+        <div style="font-size:11.5px;color:var(--tmu);margin-bottom:8px">Each row: <code style="background:var(--s3);padding:1px 5px;border-radius:4px">Min Score → Max Score → Intra-section Percentile</code></div>
         <div id="master-panel"></div>
         <div class="save-row">
           <button class="dm-btn-pri" onclick="saveMasterDist()">✓ Save Distribution</button>
@@ -277,13 +265,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
     </div>
 
-  <!-- ═══ TAB 4: SUBMISSIONS ═══ -->
   <div class="panel" id="panel-submissions" style="display:none">
 
-    <!-- Stats bar -->
     <div id="sub-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px"></div>
 
-    <!-- Filters -->
     <div style="background:#fff;border-radius:14px;border:1.5px solid var(--border);padding:1.3rem;margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div style="font-size:14px;font-weight:700;color:var(--td)">Filters</div>
@@ -323,7 +308,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
       </div>
     </div>
 
-    <!-- Table -->
     <div style="background:#fff;border-radius:14px;border:1.5px solid var(--border)">
       <div id="sub-loading" style="padding:2rem;text-align:center;font-size:13px;color:var(--tmu)">Click Refresh Data to load submissions</div>
       <div id="sub-table-wrap" style="display:none;overflow-x:auto">
@@ -353,10 +337,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 
   </div>
 
-</div><!-- /content -->
-
-<!-- MODAL — add/edit college -->
-<div id="college-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;padding:1rem">
+</div><div id="college-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;padding:1rem">
   <div style="background:#fff;border-radius:14px;padding:1.6rem;width:460px;max-width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
     <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--td);margin-bottom:1rem" id="modal-title">Add College</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
@@ -379,14 +360,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--td);min-hei
 //  SUPABASE CONFIG — fill in from:
 //  supabase.com → Project → Settings → API
 // ════════════════════════════════════════════════════
-const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';   // e.g. https://xyzabc.supabase.co
-const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';      // long string starting with eyJ...
-// ════════════════════════════════════════════════════
+const SB_URL      = 'https://dtfkcckvktkaihjriooo.supabase.co';
+const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0ZmtjY2t2a3RrYWloanJpb29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTExNDMsImV4cCI6MjA5NDMyNzE0M30.ieVvMpvKE0wtO8OUOqFRYQwwHYkNLEI5SuuXbxWeITk';
 
 // Supabase Auth endpoint
 const SB_SIGNIN = `${SB_URL}/auth/v1/token?grant_type=password`;
-
-let sbAccessToken = null;  // set after login or restored from session
+let sbAccessToken = null;
 
 // ── AUTH ─────────────────────────────────────────────
 async function doLogin(){
@@ -408,7 +387,6 @@ async function doLogin(){
       btnEl.textContent='Sign In'; btnEl.disabled=false; return;
     }
     sbAccessToken = data.access_token;
-    // ── Persist session so page refresh doesn't log out ──
     sessionStorage.setItem('sb_token', data.access_token);
     sessionStorage.setItem('sb_refresh', data.refresh_token);
     sessionStorage.setItem('sb_email', email);
@@ -428,7 +406,6 @@ function showApp(email){
 }
 
 function doLogout(){
-  // Only clears session when user explicitly clicks Logout
   sbAccessToken=null;
   sessionStorage.removeItem('sb_token');
   sessionStorage.removeItem('sb_refresh');
@@ -444,7 +421,6 @@ async function restoreSession(){
   const refresh = sessionStorage.getItem('sb_refresh');
   const email   = sessionStorage.getItem('sb_email');
   if(!token || !refresh) return false;
-  // Try refreshing the token (Supabase tokens expire after 1hr)
   try{
     const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=refresh_token`,{
       method:'POST',
@@ -453,7 +429,6 @@ async function restoreSession(){
     });
     const data = await res.json();
     if(!res.ok || data.error){
-      // Refresh token expired — must log in again
       sessionStorage.clear();
       return false;
     }
@@ -503,9 +478,7 @@ async function loadFromSupabase(){
 }
 
 // ── DB WRITE ──────────────────────────────────────────
-// Supabase upsert — inserts if key doesn't exist, updates if it does
 async function saveToSupabase(key, value){
-  // Always write to localStorage immediately
   localStorage.setItem(key, JSON.stringify(value));
   if(!sbAccessToken || !SB_URL || SB_URL==='YOUR_PROJECT_URL') return;
   try{
@@ -515,21 +488,19 @@ async function saveToSupabase(key, value){
         'apikey':          SB_ANON_KEY,
         'Authorization':   `Bearer ${sbAccessToken}`,
         'Content-Type':    'application/json',
-        'Prefer':          'resolution=merge-duplicates'  // upsert
+        'Prefer':          'resolution=merge-duplicates'
       },
       body: JSON.stringify({key, value, updated_at: new Date().toISOString()})
     });
   } catch(e){ console.warn('Supabase write failed for', key, e.message); }
 }
 
-// Alias so the rest of the code stays clean
 const saveToFirebase = saveToSupabase;
 
 // ── INIT ON PAGE LOAD ────────────────────────────────
 document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('login-password')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-  // Supabase not configured → skip login, work offline
   if(!SB_URL || SB_URL==='YOUR_PROJECT_URL'){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
@@ -540,22 +511,20 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     return;
   }
 
-  // Try restoring existing session (page refresh case)
   const restored = await restoreSession();
   if(!restored){
-    // No valid session — show login screen
     document.getElementById('login-screen').style.display='flex';
     document.getElementById('app').style.display='none';
   }
 });
 
-// ── DEFAULT DATA ──
-const DEFAULT_CURVE=[[0,.1],[3,.5],[6,1],[8,2],[10,3.5],[11,5],[12.5,55],[16.5,60],[19,65],[21.5,70],[27.5,75],[36,80],[43,85],[53,90],[67,95],[72.5,97],[81,98],[87,99],[114.5,99.5],[118,99.9],[122,100]];
+// ── DEFAULT DATA (Adapted to handles Ranges as [minScore, maxScore, percentile]) ──
+const DEFAULT_CURVE=[[0,2,.1],[3,5,.5],[6,7,1],[8,9,2],[10,10,3.5],[11,12,5],[12.5,16,55],[16.5,18,60],[19,21,65],[21.5,27,70],[27.5,35,75],[36,42,80],[43,52,85],[53,66,90],[67,72,95],[72.5,80,97],[81,86,98],[87,114,99],[114.5,117,99.5],[118,121,99.9],[122,228,100]];
 const DEFAULT_CATCO={GEN:0,OBC:-8,SC:-18,ST:-22,PWD:-25};
 const DEFAULT_MASTER={
-  varc:[[-10,.5],[-6,1],[-2,3],[0,5],[4,10],[7,15],[9,20],[11.5,55],[12.5,60],[13.5,65],[14.5,70],[15.5,75],[17.5,80],[22,85],[25,90],[30,95],[33,97],[37.5,98],[41,99],[47,99.5],[52,99.9],[64,100]],
-  lrdi:[[-10,.5],[-5,1],[-2,3],[0,5],[2,10],[4,15],[5,20],[6.5,55],[7.5,60],[8.5,65],[9.5,70],[10.5,75],[12,80],[15,85],[17,90],[22,95],[22.5,97],[25.5,98],[29,99],[33.5,99.5],[43,99.9],[53,100]],
-  qa:  [[-10,.5],[-5,1],[-2,3],[0,5],[2,10],[3,15],[4,20],[4.5,55],[5.5,60],[6.5,65],[7.5,70],[8.5,75],[10,80],[15,85],[17,90],[20.5,97],[23,95],[23.5,98],[30,99],[31,99.5],[45,99.9],[55,100]].sort((a,b)=>a[0]-b[0]),
+  varc:[[-10,-7,.5],[-6,-3,1],[-2,-1,3],[0,3,5],[4,6,10],[7,8,15],[9,11,20],[11.5,12,55],[12.5,13,60],[13.5,14,65],[14.5,15,70],[15.5,17,75],[17.5,21,80],[22,24,85],[25,29,90],[30,32,95],[33,37,97],[37.5,40,98],[41,46,99],[47,51,99.5],[52,63,99.9],[64,72,100]],
+  lrdi:[[-10,-6,.5],[-5,-3,1],[-2,-1,3],[0,1,5],[2,3,10],[4,4,15],[5,6,20],[6.5,7,55],[7.5,8,60],[8.5,9,65],[9.5,10,70],[10.5,11,75],[12,14,80],[15,16,85],[17,21,90],[22,22,95],[22.5,25,97],[25.5,28,98],[29,33,99],[33.5,42,99.5],[43,52,99.9],[53,60,100]],
+  qa:  [[-10,-6,.5],[-5,-3,1],[-2,-1,3],[0,1,5],[2,2,10],[3,3,15],[4,4,20],[4.5,5,55],[5.5,6,60],[6.5,7,65],[7.5,8,70],[8.5,9,75],[10,14,80],[15,16,85],[17,20,90],[20.5,22,97],[23,23,95],[23.5,29,98],[30,30,99],[31,44,99.5],[45,54,99.9],[55,66,100]].sort((a,b)=>a[0]-b[0]),
 };
 const DEFAULT_SLOTMETA={
   S1:{lbl:'Slot 1 — Morning (CAT 2025)',diff:'Moderate',note:'Moderate difficulty. Minimal normalization adjustment.'},
@@ -579,7 +548,7 @@ const DEFAULT_COLLEGES=[
 ];
 
 // ── LIVE STATE ──
-let activeCurveRows   = JSON.parse(localStorage.getItem('pm_curve_rows'))  || DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
+let activeCurveRows   = JSON.parse(localStorage.getItem('pm_curve_rows'))  || DEFAULT_CURVE.map(p=>({minScore:p[0],maxScore:p[1],pct:p[2]}));
 let activeColleges    = JSON.parse(localStorage.getItem('pm_colleges'))    || DEFAULT_COLLEGES.map(c=>({...c}));
 let activeSlotMeta    = JSON.parse(localStorage.getItem('pm_slotmeta'))    || JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
 let activeCatRelax    = JSON.parse(localStorage.getItem('pm_catrelax'))    || {...DEFAULT_CATCO};
@@ -590,13 +559,11 @@ let activeSlotOffsets = JSON.parse(localStorage.getItem('pm_slotoffsets')) || {S
 function switchTab(tab, btn){
   document.querySelectorAll('.dmtab').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  // Hide all panels
   ['curve','colleges','settings'].forEach(t=>{
     const el = document.getElementById('panel-'+t);
     if(el) el.classList.remove('active');
   });
   document.getElementById('panel-submissions').style.display = 'none';
-  // Show selected panel
   if(tab === 'submissions'){
     document.getElementById('panel-submissions').style.display = 'block';
     loadSubmissions();
@@ -608,29 +575,32 @@ function switchTab(tab, btn){
 
 // ── CURVE ──
 function renderCurveTable(){
-  document.getElementById('active-curve-text').textContent=`${activeCurveRows.length} data points loaded · sorted by score on save`;
+  document.getElementById('active-curve-text').textContent=`${activeCurveRows.length} data points loaded · sorted by min score on save`;
   document.getElementById('curve-tbody').innerHTML=activeCurveRows.map((r,i)=>`
     <tr style="border-bottom:1px solid var(--border2)">
-      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-sc-${i}" type="number" value="${r.score}" min="-30" max="228" step="0.5"></td>
+      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-min-${i}" type="number" value="${r.minScore}" min="-30" max="228" step="0.5"></td>
+      <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-max-${i}" type="number" value="${r.maxScore}" min="-30" max="228" step="0.5"></td>
       <td style="padding:5px 8px"><input class="dm-input" style="width:90px" id="cr-pc-${i}" type="number" value="${r.pct}" min="0" max="100" step="0.1"></td>
       <td style="padding:5px 8px"><button class="del-btn" onclick="deleteCurveRow(${i})">✕</button></td>
     </tr>`).join('');
 }
-function addCurveRow(){activeCurveRows.push({score:0,pct:0});renderCurveTable();}
+function addCurveRow(){activeCurveRows.push({minScore:0,maxScore:0,pct:0});renderCurveTable();}
 function deleteCurveRow(i){if(activeCurveRows.length<=3){alert('Need at least 3 points.');return;}activeCurveRows.splice(i,1);renderCurveTable();}
 async function saveCurve(){
   const rows=[];
   for(let i=0;i<activeCurveRows.length;i++){
-    const score=parseFloat(document.getElementById('cr-sc-'+i).value);
+    const minScore=parseFloat(document.getElementById('cr-min-'+i).value);
+    const maxScore=parseFloat(document.getElementById('cr-max-'+i).value);
     const pct=parseFloat(document.getElementById('cr-pc-'+i).value);
-    if(isNaN(score)||isNaN(pct)){alert(`Row ${i+1}: values must be numbers.`);return;}
+    if(isNaN(minScore)||isNaN(maxScore)||isNaN(pct)){alert(`Row ${i+1}: values must be numbers.`);return;}
+    if(minScore > maxScore){alert(`Row ${i+1}: Min score cannot be greater than Max score.`);return;}
     if(pct<0||pct>100){alert(`Row ${i+1}: percentile must be 0–100.`);return;}
-    rows.push({score,pct});
+    rows.push({minScore,maxScore,pct});
   }
-  rows.sort((a,b)=>a.score-b.score);
+  rows.sort((a,b)=>a.minScore-b.minScore);
   activeCurveRows=rows;
   await saveToFirebase('pm_curve_rows', activeCurveRows);
-  await saveToFirebase('pm_curve', rows.map(r=>[r.score,r.pct]));
+  await saveToFirebase('pm_curve', rows.map(r=>[r.minScore,r.maxScore,r.pct]));
   renderCurveTable();flash('curve-saved','✓ Saved & applied to predictor');
 }
 function importCSV(){const a=document.getElementById('csv-import-area');a.style.display=a.style.display==='none'?'block':'none';}
@@ -640,22 +610,21 @@ function processCSV(replace=false){
   const newRows=[];
   raw.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#')).forEach(line=>{
     const p=line.split(',').map(x=>x.trim());
-    let score,pct;
-    if(p.length>=3){score=parseFloat(p[1]);pct=parseFloat(p[2]);}
-    else if(p.length===2){score=parseFloat(p[0]);pct=parseFloat(p[1]);}
+    let minScore,maxScore,pct;
+    if(p.length===3){minScore=parseFloat(p[0]);maxScore=parseFloat(p[1]);pct=parseFloat(p[2]);}
     else return;
-    if(!isNaN(score)&&!isNaN(pct)) newRows.push({score,pct});
+    if(!isNaN(minScore)&&!isNaN(maxScore)&&!isNaN(pct)) newRows.push({minScore,maxScore,pct});
   });
-  if(!newRows.length){alert('No valid rows. Format: Score, Percentile');return;}
+  if(!newRows.length){alert('No valid rows. Format: MinScore, MaxScore, Percentile');return;}
   activeCurveRows=replace?newRows:[...activeCurveRows,...newRows];
-  activeCurveRows.sort((a,b)=>a.score-b.score);
+  activeCurveRows.sort((a,b)=>a.minScore-b.minScore);
   document.getElementById('csv-import-area').style.display='none';
   document.getElementById('csv-input').value='';
   renderCurveTable();
   alert(`${newRows.length} rows ${replace?'imported (replaced)':'added'}. Click Save & Apply Curve to activate.`);
 }
 function exportCSV(){
-  const blob=new Blob(['Score,Percentile\n'+activeCurveRows.map(r=>`${r.score},${r.pct}`).join('\n')],{type:'text/csv'});
+  const blob=new Blob(['MinScore,MaxScore,Percentile\n'+activeCurveRows.map(r=>`${r.minScore},${r.maxScore},${r.pct}`).join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cat_percentile_curve.csv';a.click();
 }
 
@@ -709,7 +678,6 @@ async function deleteCollege(i){
 
 // ── SETTINGS ──
 function renderSettings(){
-  // 1. Category relaxation
   const cats=[{id:'GEN',label:'General / EWS',hint:'No reduction'},{id:'OBC',label:'OBC-NCL',hint:'Negative number'},{id:'SC',label:'SC',hint:'Negative number'},{id:'ST',label:'ST',hint:'Negative number'},{id:'PWD',label:'PwD',hint:'Negative number'}];
   document.getElementById('cat-relax-fields').innerHTML=cats.map(c=>`
     <div class="field">
@@ -717,7 +685,6 @@ function renderSettings(){
       <input class="dm-input" id="cr-${c.id}" type="number" value="${activeCatRelax[c.id]||0}" min="-50" max="0" step="1" style="font-size:15px;font-weight:700;text-align:center;padding:9px">
       <div style="font-size:10px;color:var(--tl);text-align:center;margin-top:2px">${c.hint}</div>
     </div>`).join('');
-  // 2. Slot offsets
   const slots=[{id:'S1',label:'Slot 1 — Morning',color:'#4f46e5',hint:'Moderate'},{id:'S2',label:'Slot 2 — Afternoon',color:'#d97706',hint:'Hardest'},{id:'S3',label:'Slot 3 — Evening',color:'#059669',hint:'Moderate-Hard'}];
   document.getElementById('slot-offset-fields').innerHTML=slots.map(s=>`
     <div style="background:var(--s2);border:1.5px solid var(--border);border-radius:10px;padding:12px">
@@ -726,7 +693,6 @@ function renderSettings(){
       <div class="flabel" style="font-size:10.5px;margin-bottom:4px">Score boost (points)</div>
       <input class="dm-input" id="so-${s.id}" type="number" value="${activeSlotOffsets[s.id]||0}" min="0" max="20" step="0.5" style="font-size:20px;font-weight:700;text-align:center;padding:8px">
     </div>`).join('');
-  // 3. Slot labels
   const sl={S1:'Slot 1 — Morning',S2:'Slot 2 — Afternoon',S3:'Slot 3 — Evening'};
   document.getElementById('slot-meta-fields').innerHTML=['S1','S2','S3'].map(s=>`
     <div style="display:grid;grid-template-columns:110px 1fr 2fr;gap:8px;align-items:center;background:var(--s2);border-radius:8px;padding:9px 10px">
@@ -759,26 +725,32 @@ function switchMasterSec(sec,btn){masterSec=sec;document.querySelectorAll('[id^=
 function renderMasterPanel(){
   const data=activeMaster[masterSec];
   document.getElementById('master-panel').innerHTML=`
-    <table style="width:320px;border-collapse:collapse">
+    <table style="width:400px;border-collapse:collapse">
       <thead><tr>
-        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">SCORE</th>
+        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">MIN SCORE</th>
+        <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">MAX SCORE</th>
         <th style="font-size:10.5px;font-weight:700;color:var(--tmu);text-align:left;padding:5px 7px;border-bottom:1.5px solid var(--border)">%ILE</th>
         <th style="padding:5px 7px;border-bottom:1.5px solid var(--border)"><button onclick="addMasterRow()" style="padding:2px 9px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer">+</button></th>
       </tr></thead>
       <tbody>${data.map((p,i)=>`<tr>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-${i}" type="number" value="${p[0]}" step="1"></td>
-        <td class="dm-td"><input class="dm-input" style="width:70px" id="mp-${i}" type="number" value="${p[1]}" min="0" max="100" step="0.1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-min-${i}" type="number" value="${p[0]}" step="1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:70px" id="ms-max-${i}" type="number" value="${p[1] !== undefined ? p[1] : p[0]}" step="1"></td>
+        <td class="dm-td"><input class="dm-input" style="width:70px" id="mp-${i}" type="number" value="${p[2] !== undefined ? p[2] : p[1]}" min="0" max="100" step="0.1"></td>
         <td class="dm-td"><button class="del-btn" onclick="delMasterRow(${i})">✕</button></td>
       </tr>`).join('')}</tbody>
     </table>`;
 }
-function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,Math.min(100,last[1]+.5)]);renderMasterPanel();}
+function addMasterRow(){const d=activeMaster[masterSec],last=d[d.length-1];d.push([last[0]+5,last[1]+5,Math.min(100,last[2]+.5)]);renderMasterPanel();}
 function delMasterRow(i){const d=activeMaster[masterSec];if(d.length<=4){alert('Need at least 4 points.');return;}d.splice(i,1);renderMasterPanel();}
 async function saveMasterDist(){
   const d=activeMaster[masterSec],rows=[];
   for(let i=0;i<d.length;i++){
-    const s=parseFloat(document.getElementById('ms-'+i).value);const p=parseFloat(document.getElementById('mp-'+i).value);
-    if(isNaN(s)||isNaN(p)){alert('All values must be numbers.');return;}rows.push([s,p]);
+    const sMin=parseFloat(document.getElementById('ms-min-'+i).value);
+    const sMax=parseFloat(document.getElementById('ms-max-'+i).value);
+    const p=parseFloat(document.getElementById('mp-'+i).value);
+    if(isNaN(sMin)||isNaN(sMax)||isNaN(p)){alert('All values must be numbers.');return;}
+    if(sMin > sMax){alert(`Row ${i+1}: Min score cannot be greater than Max score.`);return;}
+    rows.push([sMin,sMax,p]);
   }
   rows.sort((a,b)=>a[0]-b[0]);activeMaster[masterSec]=rows;
   await saveToFirebase('pm_master', activeMaster);renderMasterPanel();flash('master-saved','✓ Saved & applied');
@@ -788,14 +760,13 @@ async function saveMasterDist(){
 async function resetAllData(){
   if(!confirm('Reset ALL data to factory defaults? Cannot be undone.'))return;
   ['pm_curve','pm_curve_rows','pm_colleges','pm_slotmeta','pm_catrelax','pm_slotdist','pm_master','pm_slotoffsets'].forEach(k=>localStorage.removeItem(k));
-  activeCurveRows=DEFAULT_CURVE.map(p=>({score:p[0],pct:p[1]}));
+  activeCurveRows=DEFAULT_CURVE.map(p=>({minScore:p[0],maxScore:p[1],pct:p[2]}));
   activeColleges=DEFAULT_COLLEGES.map(c=>({...c}));
   activeSlotMeta=JSON.parse(JSON.stringify(DEFAULT_SLOTMETA));
   activeCatRelax={...DEFAULT_CATCO};
   activeMaster=JSON.parse(JSON.stringify(DEFAULT_MASTER));
   activeSlotOffsets={S1:0,S2:4,S3:2};
-  // Write defaults to Firebase
-  if(fbIdToken){
+  if(sbAccessToken){
     await saveToFirebase('pm_curve_rows', activeCurveRows);
     await saveToFirebase('pm_curve', DEFAULT_CURVE.map(p=>[...p]));
     await saveToFirebase('pm_colleges', activeColleges);
@@ -852,7 +823,7 @@ function renderSubStats(rows){
   const above90 = validPcts.filter(p=>p>=90).length;
   const stats=[
     {label:'Total Submissions', value:rows.length,                                         color:'#4f46e5'},
-    {label:'Avg Percentile',    value:avg+'th',                                             color:'#0ea5e9'},
+    {label:'Avg Percentile',    value:avg+'th',                                           color:'#0ea5e9'},
     {label:'Median Percentile', value:median+'th',                                          color:'#10b981'},
     {label:'Above 90th %ile',   value:above90+' ('+Math.round(above90/rows.length*100)+'%)',color:'#d97706'},
   ];
@@ -950,6 +921,5 @@ function flash(id,msg){const el=document.getElementById(id);if(!el)return;el.tex
 renderCurveTable();
 renderColleges();
 </script>
-</div><!-- /app -->
-</body>
+</div></body>
 </html>
